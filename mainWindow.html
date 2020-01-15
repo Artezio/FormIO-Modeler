@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Formio</title>
+    <link rel="stylesheet" href="./data/bootstrap.min.css">
+    <link rel="stylesheet" href="./data/formio.full.min.css">
+    <link rel="stylesheet" href="./data/style.css">
+    <script src='https://unpkg.com/formiojs@latest/dist/formio.full.min.js'></script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="form-group">
+            <label for="formTitle">Title</label>
+            <input class="form-control" type="text" name="formTitle" id="formTitle" placeholder="Enter the form title">
+        </div>
+        <div class="form-group">
+            <label for="formName">Name</label>
+            <input class="form-control" type="text" name="formName" id="formName" placeholder="Enter the form name">
+        </div>
+        <div class="form-group">
+            <label for="formPath">Path</label>
+            <input class="form-control" type="text" name="formPath" id="formPath" placeholder="Enter the form path">
+        </div>
+        <div id="builder"></div>
+    </div>
+    <script src="./script.js"></script>
+</body>
+
+</html>

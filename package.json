@@ -1,0 +1,13 @@
+{
+  "name": "formio-electron",
+  "version": "1.0.0",
+  "main": "main.js",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^7.1.9",
+    "formiojs": "^4.8.0-rc.13"
+  },
+  "scripts": {
+    "start": "electron main.js"
+  }
+}
