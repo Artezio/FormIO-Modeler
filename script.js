@@ -1,6 +1,7 @@
 const { ipcRenderer } = require('electron');
 const ProcessesConnector = require('./util/processesConnector');
 const uuid = require('uuid/v1');
+const { Formio } = require('formiojs');
 
 const processesConnector = new ProcessesConnector(ipcRenderer.on.bind(ipcRenderer), ipcRenderer.once.bind(ipcRenderer), ipcRenderer.send.bind(ipcRenderer));
 let formioBuilder;
