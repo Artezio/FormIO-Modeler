@@ -1,4 +1,5 @@
 const fs = require('fs');
+
 const pathToWorkspaceInfoFile = './data/lastWorkspace.txt';
 
 let instance;
@@ -29,17 +30,38 @@ class FileSystem {
 
     setWorkingSpace(path) {
         this.workspacePath = path;
-        fs.writeFile(pathToWorkspaceInfoFile, this.workspacePath, (err) => {
-            console.error(err)
-        });
+        // fs.writeFile(pathToWorkspaceInfoFile, this.workspacePath, (err) => {
+        //     if (err) {
+        //         console.error(err)
+        //     } else {
+
+        //     }
+        // });
     }
 
     checkFileExist(path) {
-        return fs.existsSync(path);
+        try {
+            return fs.existsSync(path);
+        } catch (err) {
+            console.error(err);
+            return true;
+        }
     }
 
     async saveFile(data, path) {
-        return fs.writeFileSync(path, data);
+        try {
+            return fs.writeFileSync(path, data);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async readDir(dirPath) {
+        return fs.readdirSync(dirPath);
+    }
+
+    readFile(path, callback) {
+        fs.readFile(path, 'utf8', callback);
     }
 }
 

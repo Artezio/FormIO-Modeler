@@ -2,6 +2,7 @@ const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const path = require('path');
 const { format } = require('url');
 const FileSystem = require('./fileSystem');
+const ProcessesConnector = require('./util/processesConnector');
 
 
 // const fileSystem = FileSystem.getInstance();
@@ -10,6 +11,7 @@ const fileSystem = new FileSystem();
 const pathToMainWindow = path.resolve(__dirname, './mainWindow.html');
 
 let mainWindow;
+let processesConnector;
 
 app.on('ready', () => {
     mainWindow = new BrowserWindow({
@@ -22,8 +24,11 @@ app.on('ready', () => {
     }).on('closed', () => {
         app.quit();
         mainWindow = null;
+        processesConnector = null;
+        typeof usSubscribe === 'function' && usSubscribe();
     })
-
+    processesConnector = new ProcessesConnector(ipcMain.on.bind(ipcMain), ipcMain.once.bind(ipcMain), mainWindow.webContents.send.bind(mainWindow.webContents));
+    const usSubscribe = prepareResponders();
     setUpMenu();
 
     if (!fileSystem.workspacePath) {
@@ -34,7 +39,7 @@ app.on('ready', () => {
             mainWindow.close();
             return;
         }
-        fileSystem.setWorkingSpace(workspacePath);
+        fileSystem.setWorkingSpace(workspacePath[0]);
     }
     showMainWindow();
 })
@@ -56,7 +61,7 @@ function setUpMenu() {
                     label: 'Save',
                     accelerator: 'CmdOrCtrl+S',
                     click() {
-                        saveFormAttempt();
+                        handleSaveForm();
                     }
                 }
             ]
@@ -78,20 +83,18 @@ function setUpMenu() {
     Menu.setApplicationMenu(menu);
 }
 
-function saveFormAttempt() {
-    mainWindow.webContents.send('form.get.start');
-    ipcMain.once('form.get.end', (event, form) => {
-        form = JSON.parse(form);
+function handleSaveForm() {
+    if (!processesConnector) return;
+    processesConnector.request('getForm').then(form => {
         if (form && form.path) {
             const fileName = form.path + '.json';
             const path = fileSystem.workspacePath + '/' + fileName;
             const fileAlreadyExist = fileSystem.checkFileExist(path);
             if (fileAlreadyExist) {
-                mainWindow.webContents.send('confirm.start', {
+                processesConnector.request('confirmFormReplace', {
                     message: `${fileName} already exists.\nDo you want to replace it?`
-                })
-                ipcMain.once('confirm.end', (event, canSave) => {
-                    if (canSave) {
+                }).then(canReplace => {
+                    if (canReplace) {
                         saveForm(form, path);
                     }
                 })
@@ -99,7 +102,41 @@ function saveFormAttempt() {
                 saveForm(form, path);
             }
         }
-    });
+    })
+}
+
+function filterForms(form) {
+    if (typeof form !== 'object' || Array.isArray(form) || form === null || !form.title || !form.path) {
+        return false;
+    }
+    return true;
+}
+
+function prepareResponders() {
+    if (!processesConnector) return;
+    async function getSubFormsHandler() {
+        if (!fileSystem.workspacePath) return [];
+        const fileNames = await fileSystem.readDir(fileSystem.workspacePath);
+        if (!Array.isArray(fileNames)) {
+            return [];
+        }
+        const jsonData = await Promise.all(fileNames.map(fileName => new Promise((res, rej) => {
+            const path = fileSystem.workspacePath + '\\' + fileName;
+            fileSystem.readFile(path, (err, data) => {
+                if (err) {
+                    rej(err);
+                } else {
+                    res(JSON.parse(data))
+                }
+            })
+        })))
+        const forms = jsonData.filter(filterForms);
+        return forms;
+    }
+    processesConnector.respond('getSubForms', getSubFormsHandler);
+    return function () {
+        ipcMain.removeListener('getSubForms', getSubFormsHandler);
+    }
 }
 
 function saveForm(form, path) {

@@ -5,7 +5,8 @@
   "license": "MIT",
   "dependencies": {
     "electron": "^7.1.9",
-    "formiojs": "^4.8.0-rc.13"
+    "formiojs": "^4.8.0-rc.13",
+    "uuid": "^3.3.3"
   },
   "scripts": {
     "start": "electron main.js"
