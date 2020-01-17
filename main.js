@@ -2,16 +2,13 @@ const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const path = require('path');
 const { format } = require('url');
 const FileSystem = require('./fileSystem');
-const ProcessesConnector = require('./util/processesConnector');
-
 
 // const fileSystem = FileSystem.getInstance();
 const fileSystem = new FileSystem();
 
-const pathToMainWindow = path.resolve(__dirname, './mainWindow.html');
+const pathToMainPage = path.resolve(__dirname, './mainPage.html');
 
 let mainWindow;
-let processesConnector;
 
 app.on('ready', () => {
     mainWindow = new BrowserWindow({
@@ -24,11 +21,9 @@ app.on('ready', () => {
     }).on('closed', () => {
         app.quit();
         mainWindow = null;
-        processesConnector = null;
         typeof usSubscribe === 'function' && usSubscribe();
     })
-    processesConnector = new ProcessesConnector(ipcMain.on.bind(ipcMain), ipcMain.once.bind(ipcMain), mainWindow.webContents.send.bind(mainWindow.webContents));
-    const usSubscribe = prepareResponders();
+    const usSubscribe = prepareHandlers();
     setUpMenu();
 
     if (!fileSystem.workspacePath) {
@@ -41,12 +36,12 @@ app.on('ready', () => {
         }
         fileSystem.setWorkingSpace(workspacePath[0]);
     }
-    showMainWindow();
+    showMainPage();
 })
 
-function showMainWindow() {
+function showMainPage() {
     mainWindow.loadURL(format({
-        pathname: pathToMainWindow,
+        pathname: pathToMainPage,
         protocol: 'file',
         slashes: true
     }))
@@ -55,13 +50,25 @@ function showMainWindow() {
 function setUpMenu() {
     let template = [
         {
-            label: 'Save',
+            label: 'File',
             submenu: [
+                {
+                    label: 'Create new',
+                    click() {
+                        createNewForm()
+                    }
+                },
+                {
+                    label: 'Open',
+                    click() {
+                        openForm()
+                    }
+                },
                 {
                     label: 'Save',
                     accelerator: 'CmdOrCtrl+S',
                     click() {
-                        handleSaveForm();
+                        startFormSaving();
                     }
                 }
             ]
@@ -83,44 +90,25 @@ function setUpMenu() {
     Menu.setApplicationMenu(menu);
 }
 
-function handleSaveForm() {
-    if (!processesConnector) return;
-    processesConnector.request('getForm').then(form => {
-        if (form && form.path) {
-            const fileName = form.path + '.json';
-            const path = fileSystem.workspacePath + '/' + fileName;
-            const fileAlreadyExist = fileSystem.checkFileExist(path);
-            if (fileAlreadyExist) {
-                processesConnector.request('confirmFormReplace', {
-                    message: `${fileName} already exists.\nDo you want to replace it?`
-                }).then(canReplace => {
-                    if (canReplace) {
-                        saveForm(form, path);
-                    }
-                })
-            } else {
-                saveForm(form, path);
-            }
-        }
-    })
+function startFormSaving() {
+    mainWindow.webContents.send('getForm.start');
 }
 
-function filterForms(form) {
+function isForm(form) {
     if (typeof form !== 'object' || Array.isArray(form) || form === null || !form.title || !form.path) {
         return false;
     }
     return true;
 }
 
-function prepareResponders() {
-    if (!processesConnector) return;
-    async function getSubFormsHandler() {
-        if (!fileSystem.workspacePath) return [];
-        const fileNames = await fileSystem.readDir(fileSystem.workspacePath);
+function getSubFormsStartHandler() {
+    if (!fileSystem.workspacePath) return [];
+    fileSystem.readDir(fileSystem.workspacePath).then(fileNames => {
         if (!Array.isArray(fileNames)) {
-            return [];
+            mainWindow.webContents.send('getSubForms.end', []);
+            return;
         }
-        const jsonData = await Promise.all(fileNames.map(fileName => new Promise((res, rej) => {
+        Promise.all(fileNames.map(fileName => new Promise((res, rej) => {
             const path = fileSystem.workspacePath + '\\' + fileName;
             fileSystem.readFile(path, (err, data) => {
                 if (err) {
@@ -130,12 +118,76 @@ function prepareResponders() {
                 }
             })
         })))
-        const forms = jsonData.filter(filterForms);
-        return forms;
+            .then(forms => forms.filter(isForm))
+            .then(forms => {
+                mainWindow.webContents.send('getSubForms.end', forms);
+            })
+    })
+}
+
+function getFormEndHandler(event, form) {
+    if (form) {
+        if (!form.path) {
+            dialog.showMessageBoxSync(mainWindow, {
+                message: 'Enter path to save form.'
+            })
+            mainWindow.webContents.send('focusPath');
+            return;
+        }
+        const fileName = form.path + '.json';
+        const path = fileSystem.workspacePath + '/' + fileName;
+        const fileAlreadyExist = fileSystem.checkFileExist(path);
+        if (fileAlreadyExist) {
+            const canSave = dialog.showMessageBoxSync(mainWindow, {
+                message: `${fileName} already exists.\nDo you want to replace it?`,
+                buttons: ['Yes', 'No']
+            })
+            if (canSave === 0) {
+                saveForm(form, path);
+            }
+        } else {
+            saveForm(form, path);
+        }
     }
-    processesConnector.respond('getSubForms', getSubFormsHandler);
+}
+
+function openForm(event, arg) {
+    const formPath = dialog.showOpenDialogSync(mainWindow,
+        {
+            filters: [
+                { name: 'formio', extensions: ['json'] },
+            ],
+
+            properties: ['openFile']
+        })[0];
+    if (!formPath) return;
+    try {
+        const form = JSON.parse(fileSystem.readFileSync(formPath));
+        if (!isForm(form)) {
+            mainWindow.webContents.send('openForm', {});
+            return;
+        }
+        mainWindow.webContents.send('openForm', form);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function createNewForm() {
+    mainWindow.webContents.send('createNewForm');
+}
+
+function prepareHandlers() {
+    ipcMain.on('getForm.end', getFormEndHandler);
+
+    ipcMain.on('getSubForms.start', getSubFormsStartHandler);
+
+    ipcMain.on('showMainPage', openForm);
+
     return function () {
-        ipcMain.removeListener('getSubForms', getSubFormsHandler);
+        ipcMain.removeListener('getForm.end', getFormEndHandler);
+        ipcMain.removeListener('getSubForms.start', getSubFormsStartHandler);
+        ipcMain.removeListener('showMainPage', openForm);
     }
 }
 
@@ -144,7 +196,7 @@ function saveForm(form, path) {
         if (err) {
             console.error(err);
         } else {
-            mainWindow.webContents.send('form.saved');
+            mainWindow.webContents.send('formWasSaved');
         }
     })
 }

@@ -1,0 +1,11 @@
+.saved-notification {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  width: 180px;
+  z-index: 1000;
+}
+
+#formDetails div.d-flex label {
+  width: 50px;
+}

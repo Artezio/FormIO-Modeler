@@ -63,6 +63,10 @@ class FileSystem {
     readFile(path, callback) {
         fs.readFile(path, 'utf8', callback);
     }
+
+    readFileSync(path) {
+        return fs.readFileSync(path, 'utf8');
+    }
 }
 
 module.exports = FileSystem;
