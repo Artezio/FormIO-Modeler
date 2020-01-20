@@ -54,12 +54,14 @@ function setUpMenu() {
             submenu: [
                 {
                     label: 'Create new',
+                    accelerator: 'CmdOrCtrl+N',
                     click() {
                         createNewForm()
                     }
                 },
                 {
                     label: 'Open',
+                    accelerator: 'CmdOrCtrl+O',
                     click() {
                         openForm()
                     }
@@ -152,15 +154,16 @@ function getFormEndHandler(event, form) {
 }
 
 function openForm(event, arg) {
-    const formPath = dialog.showOpenDialogSync(mainWindow,
+    const formPaths = dialog.showOpenDialogSync(mainWindow,
         {
             filters: [
                 { name: 'formio', extensions: ['json'] },
             ],
 
             properties: ['openFile']
-        })[0];
-    if (!formPath) return;
+        });
+    if (!formPaths) return;
+    const formPath = formPaths[0];
     try {
         const form = JSON.parse(fileSystem.readFileSync(formPath));
         if (!isForm(form)) {
