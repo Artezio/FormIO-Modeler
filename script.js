@@ -1,6 +1,7 @@
 const { ipcRenderer } = require('electron');
 const uuid = require('uuid/v1');
 const { Formio } = require('formiojs');
+require('bootstrap');
 
 let form = {};
 let formStatus;
@@ -8,22 +9,18 @@ const EDIT = 'EDIT',
     CREATE = 'CREATE';
 const formElement = document.forms.formDetails;
 const pathElement = document.getElementById('formPath');
+const mainContentWrapper = document.getElementById('mainContentWrapper');
 run();
 
 function run() {
     overrideFormioRequest();
     const unSubscribe = prepareHandlers();
     formElement.addEventListener('change', () => handleFormChange);
-    // subscribeOnChange(formElement.elements);
     formElement.onsubmit = e => e.preventDefault();
     document.addEventListener('unload', () => {
         typeof unSubscribe === 'function' && unSubscribe()
     })
 }
-
-// function subscribeOnChange(elements) {
-//     elements.forEach(element => element.addEventListener('change', () => handleFormChange()))
-// }
 
 function setFormDetails(details = {}) {
     const controls = [].filter.call(formElement.elements, el => !!el.name);
@@ -71,6 +68,7 @@ function overrideFormioRequest() {
 
 function updateForm(newForm = {}) {
     form = {
+        ...form,
         created: form.created ? form.created : new Date().toISOString(),
         modified: new Date().toISOString(),
         _id: form._id ? form._id : uuid(),
@@ -87,9 +85,31 @@ function setFormStatusEdit() {
     formStatus = EDIT;
 }
 
-function attachBuilder(schema = {}) {
+function attachFormio(schema = {}) {
     Formio.builder(document.getElementById('builder'), schema).then(builder => {
-        builder.on('change', updateForm);
+        const previewElement = document.getElementById('preview');
+        let formInstance;
+        Formio.createForm(previewElement, schema, {
+            noAlerts: true
+        }).then(instance => {
+            formInstance = instance;
+            instance.nosubmit = true;
+            instance.on('submit', submission => {
+                instance.emit('submitDone', submission);
+            })
+            instance.on('submitDone', (...args) => {
+                console.log('submitDone', args);
+            })
+            instance.on('change', (...args) => {
+                console.log('change', args)
+            })
+        })
+        builder.on('change', schema => {
+            updateForm(schema);
+            if (formInstance) {
+                formInstance.setForm(schema);
+            }
+        });
     })
 }
 
@@ -120,17 +140,21 @@ function getFormHandler(event, arg) {
 }
 
 function createNewFormHandler(event, arg) {
-    formElement.style.display = "";
+    showMainContent();
     resetFormDetails();
-    attachBuilder();
+    attachFormio();
     setFormStatusCreate();
 }
 
 function openFormHandler(event, form) {
-    formElement.style.display = "";
+    showMainContent();
     setFormDetails(form);
-    attachBuilder(form);
+    attachFormio(form);
     setFormStatusEdit();
+}
+
+function showMainContent() {
+    mainContentWrapper.style.display = "";
 }
 
 function focusPathHandler(event, arg) {

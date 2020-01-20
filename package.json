@@ -4,7 +4,10 @@
   "main": "main.js",
   "license": "MIT",
   "dependencies": {
+    "bootstrap": "^4.4.1",
     "formiojs": "^4.8.0-rc.13",
+    "jquery": "^3.4.1",
+    "popper.js": "^1.16.0",
     "uuid": "^3.3.3"
   },
   "devDependencies": {
