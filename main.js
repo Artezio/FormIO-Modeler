@@ -10,7 +10,20 @@ const pathToMainPage = path.resolve(__dirname, './mainPage.html');
 
 let mainWindow;
 
-app.on('ready', () => {
+app.on('ready', setUpMenu);
+app.on('ready', createWindow);
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
+})
+app.on('activate', () => {
+    if (mainWindow === null) {
+        createWindow()
+    }
+})
+
+function createWindow() {
     mainWindow = new BrowserWindow({
         height: 800,
         width: 1200,
@@ -19,12 +32,10 @@ app.on('ready', () => {
             nodeIntegration: true
         }
     }).on('closed', () => {
-        app.quit();
         mainWindow = null;
         typeof usSubscribe === 'function' && usSubscribe();
     })
     const usSubscribe = prepareHandlers();
-    setUpMenu();
 
     if (!fileSystem.workspacePath) {
         const workspacePath = dialog.showOpenDialogSync(mainWindow, {
@@ -37,7 +48,7 @@ app.on('ready', () => {
         fileSystem.setWorkingSpace(workspacePath[0]);
     }
     showMainPage();
-})
+}
 
 function showMainPage() {
     mainWindow.loadURL(format({
