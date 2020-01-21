@@ -1,7 +1,10 @@
 const { ipcRenderer } = require('electron');
 const uuid = require('uuid/v1');
 const { Formio } = require('formiojs');
+const $ = require('jquery');
 require('bootstrap');
+
+const jsonViewer = new JSONViewer();
 
 let form = {};
 let formStatus;
@@ -10,6 +13,11 @@ const EDIT = 'EDIT',
 const formElement = document.forms.formDetails;
 const pathElement = document.getElementById('formPath');
 const mainContentWrapper = document.getElementById('mainContentWrapper');
+const viewDataContainerElement = document.getElementById('viewData');
+const viewDataTabElement = document.getElementById('view-data-tab');
+const jsonViewerContainer = jsonViewer.getContainer();
+const noDataMessage = 'No data submitted';
+
 run();
 
 function run() {
@@ -20,6 +28,7 @@ function run() {
     document.addEventListener('unload', () => {
         typeof unSubscribe === 'function' && unSubscribe()
     })
+    appendNoEnteredDataMessage();
 }
 
 function setFormDetails(details = {}) {
@@ -97,20 +106,31 @@ function attachFormio(schema = {}) {
             instance.on('submit', submission => {
                 instance.emit('submitDone', submission);
             })
-            instance.on('submitDone', (...args) => {
-                console.log('submitDone', args);
-            })
-            instance.on('change', (...args) => {
-                console.log('change', args)
-            })
+            instance.on('submitDone', fomrioSubmitDoneHandler);
         })
         builder.on('change', schema => {
             updateForm(schema);
             if (formInstance) {
                 formInstance.setForm(schema);
             }
+            appendNoEnteredDataMessage();
         });
     })
+}
+
+function fomrioSubmitDoneHandler(submission) {
+    $(viewDataTabElement).tab('show');
+    jsonViewer.showJSON(submission && submission.data);
+    appendJsonViewer();
+}
+
+function appendNoEnteredDataMessage() {
+    viewDataContainerElement.innerHTML = noDataMessage;
+}
+
+function appendJsonViewer() {
+    viewDataContainerElement.innerHTML = "";
+    viewDataContainerElement.append(jsonViewerContainer);
 }
 
 function resetFormDetails() {

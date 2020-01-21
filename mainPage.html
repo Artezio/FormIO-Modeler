@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="./data/bootstrap.min.css">
     <link rel="stylesheet" href="./data/formio.full.min.css">
     <link rel="stylesheet" href="./data/mainPage.css">
+    <link rel="stylesheet" href="./data/json-viewer.css">
+    <script src="./json-viewer.js"></script>
 </head>
 
 <body>
@@ -20,6 +22,10 @@
                 <li class="nav-item">
                     <a class="nav-link" id="enter-data-tab" data-toggle="tab" href="#enterData" role="tab"
                         aria-controls="enter-data" aria-selected="false">Enter Data</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="view-data-tab" data-toggle="tab" href="#viewData" role="tab"
+                        aria-controls="view-data" aria-selected="false">View Data</a>
                 </li>
             </ul>
 
@@ -46,6 +52,9 @@
                 </div>
                 <div class="tab-pane fade" id="enterData" role="tabpanel" aria-labelledby="enter-data-tab">
                     <div id="preview"></div>
+                </div>
+                <div class="tab-pane fade" id="viewData" role="tabpanel" aria-labelledby="view-data-tab">
+                    <pre id="viewDataContainer"></pre>
                 </div>
             </div>
         </div>

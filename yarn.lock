@@ -1126,6 +1126,11 @@ ismobilejs@^1.0.3:
   resolved "https://registry.yarnpkg.com/ismobilejs/-/ismobilejs-1.0.3.tgz#69ec3faccd17dfeeadd471e70955d1e192a46eb6"
   integrity sha512-6rTcdWK7PHIWPYlCPdTbU9eE9yzdnIQSpiH+8Ln5OqugpEszQK5KHlsjZrDae26fEhki9rPvQmsjI1q4CLuKIA==
 
+jquery.json-viewer@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/jquery.json-viewer/-/jquery.json-viewer-1.4.0.tgz#6e0ede8ae3239cb20ac359f663b9aae4ec8a9d94"
+  integrity sha512-6H1U/w+/8vMwDH5Im0OveuKPZ1fZWy7hgvR3Cn+HeamQIoWrVqBuRaE2TF/xEc6Hmi3vhQVRqZBmYGKTdOo2tw==
+
 jquery@^3.4.1:
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.4.1.tgz#714f1f8d9dde4bdfa55764ba37ef214630d80ef2"
