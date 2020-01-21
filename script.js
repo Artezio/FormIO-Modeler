@@ -8,27 +8,25 @@ const jsonViewer = new JSONViewer();
 
 let form = {};
 let formStatus;
-const EDIT = 'EDIT',
-    CREATE = 'CREATE';
+const EDIT = 'EDIT';
+const CREATE = 'CREATE';
+const NO_DATA_SUBMITTED = 'No data submitted';
 const formElement = document.forms.formDetails;
 const pathElement = document.getElementById('formPath');
 const mainContentWrapper = document.getElementById('mainContentWrapper');
 const viewDataContainerElement = document.getElementById('viewData');
 const viewDataTabElement = document.getElementById('view-data-tab');
 const jsonViewerContainer = jsonViewer.getContainer();
-const noDataMessage = 'No data submitted';
-
-run();
 
 function run() {
     overrideFormioRequest();
-    const unSubscribe = prepareHandlers();
-    formElement.addEventListener('change', () => handleFormChange);
+    const unsubscribe = prepareHandlers();
+    formElement.addEventListener('change', handleFormChange);
     formElement.onsubmit = e => e.preventDefault();
     document.addEventListener('unload', () => {
-        typeof unSubscribe === 'function' && unSubscribe()
+        unsubscribe()
     })
-    appendNoEnteredDataMessage();
+    appendNoDataSubmittedMessage();
 }
 
 function setFormDetails(details = {}) {
@@ -113,7 +111,7 @@ function attachFormio(schema = {}) {
             if (formInstance) {
                 formInstance.setForm(schema);
             }
-            appendNoEnteredDataMessage();
+            appendNoDataSubmittedMessage();
         });
     })
 }
@@ -124,8 +122,8 @@ function fomrioSubmitDoneHandler(submission) {
     appendJsonViewer();
 }
 
-function appendNoEnteredDataMessage() {
-    viewDataContainerElement.innerHTML = noDataMessage;
+function appendNoDataSubmittedMessage() {
+    viewDataContainerElement.innerHTML = NO_DATA_SUBMITTED;
 }
 
 function appendJsonViewer() {
@@ -196,3 +194,5 @@ function prepareHandlers() {
         ipcRenderer.removeListener('focusPath', focusPathHandler);
     }
 }
+
+run();

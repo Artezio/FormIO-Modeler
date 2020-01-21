@@ -2,16 +2,21 @@ const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const path = require('path');
 const { format } = require('url');
 const FileSystem = require('./fileSystem');
+const isForm = require('./util/isForm');
 
 // const fileSystem = FileSystem.getInstance();
 const fileSystem = new FileSystem();
 
 const pathToMainPage = path.resolve(__dirname, './mainPage.html');
+const pathToStartPage = path.resolve(__dirname, './startPage.html');
 
 let mainWindow;
 
-app.on('ready', setUpMenu);
-app.on('ready', createWindow);
+app.on('ready', () => {
+    setUpMenu();
+    createMainWindow();
+
+})
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit()
@@ -19,11 +24,13 @@ app.on('window-all-closed', () => {
 })
 app.on('activate', () => {
     if (mainWindow === null) {
-        createWindow()
+        createMainWindow()
     }
-})
+});
 
-function createWindow() {
+function createMainWindow() {
+    const unsubscribe = prepareHandlers();
+
     mainWindow = new BrowserWindow({
         height: 800,
         width: 1200,
@@ -33,96 +40,101 @@ function createWindow() {
         }
     }).on('closed', () => {
         mainWindow = null;
-        typeof usSubscribe === 'function' && usSubscribe();
+        unsubscribe();
     })
-    const usSubscribe = prepareHandlers();
 
-    if (!fileSystem.workspacePath) {
-        const workspacePath = dialog.showOpenDialogSync(mainWindow, {
-            properties: ['openDirectory']
+    if (!fileSystem.recentWorkspacePaths.length) {
+        const workspacePaths = dialog.showOpenDialogSync(mainWindow, {
+            properties: ['openDirectory'],
+            title: 'Select workspace'
         })
-        if (!workspacePath) {
+        if (!workspacePaths) {
             mainWindow.close();
             return;
         }
-        fileSystem.setWorkingSpace(workspacePath[0]);
+        fileSystem.setCurrentWorkspace(workspacePaths[0]);
+        showMainPage();
+    } else {
+        showStartPage();
     }
-    showMainPage();
 }
 
-function showMainPage() {
+function showPage(path) {
     mainWindow.loadURL(format({
-        pathname: pathToMainPage,
+        pathname: path,
         protocol: 'file',
         slashes: true
     }))
 }
 
+function showStartPage() {
+    showPage(pathToStartPage);
+}
+function showMainPage() {
+    showPage(pathToMainPage);
+}
+
+const menuTemplate = [
+    {
+        label: 'File',
+        submenu: [
+            {
+                label: 'Create new',
+                accelerator: 'CmdOrCtrl+N',
+                click: createNewForm
+            },
+            {
+                label: 'Open',
+                accelerator: 'CmdOrCtrl+O',
+                click: openForm
+            },
+            {
+                label: 'Save',
+                accelerator: 'CmdOrCtrl+S',
+                click: startFormSaving
+            }
+        ]
+    },
+    {
+        label: 'Development',
+        submenu: [{
+            label: 'Toggle Developer Tools',
+            accelerator: 'F12',
+            click: toggleDevTools
+        }]
+    }
+]
+
 function setUpMenu() {
-    let template = [
-        {
-            label: 'File',
-            submenu: [
-                {
-                    label: 'Create new',
-                    accelerator: 'CmdOrCtrl+N',
-                    click() {
-                        createNewForm()
-                    }
-                },
-                {
-                    label: 'Open',
-                    accelerator: 'CmdOrCtrl+O',
-                    click() {
-                        openForm()
-                    }
-                },
-                {
-                    label: 'Save',
-                    accelerator: 'CmdOrCtrl+S',
-                    click() {
-                        startFormSaving();
-                    }
-                }
-            ]
-        },
-        {
-            label: 'Development',
-            submenu: [{
-                label: 'Toggle Developer Tools',
-                accelerator: 'F12',
-                click: (item, focusedWindow) => {
-                    if (focusedWindow) {
-                        focusedWindow.toggleDevTools()
-                    }
-                }
-            }]
-        }
-    ]
-    const menu = Menu.buildFromTemplate(template);
+    if (process.platform === 'darwin') {
+        menuTemplate.unshift({});
+    }
+    if (process.env.NODE_ENV === 'production') {
+        menuTemplate.pop();
+    }
+    const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
+}
+
+function toggleDevTools(item, focusedWindow) {
+    if (focusedWindow) {
+        focusedWindow.toggleDevTools()
+    }
 }
 
 function startFormSaving() {
     mainWindow.webContents.send('getForm.start');
 }
 
-function isForm(form) {
-    if (typeof form !== 'object' || Array.isArray(form) || form === null || !form.title || !form.path) {
-        return false;
-    }
-    return true;
-}
-
 function getSubFormsStartHandler() {
-    if (!fileSystem.workspacePath) return [];
-    fileSystem.readDir(fileSystem.workspacePath).then(fileNames => {
+    if (!fileSystem.currentWorkspacePath) return [];
+    fileSystem.readDir(fileSystem.currentWorkspacePath).then(fileNames => {
         if (!Array.isArray(fileNames)) {
             mainWindow.webContents.send('getSubForms.end', []);
             return;
         }
         Promise.all(fileNames.map(fileName => new Promise((res, rej) => {
-            const path = fileSystem.workspacePath + '\\' + fileName;
+            const path = fileSystem.currentWorkspacePath + '\\' + fileName;
             fileSystem.readFile(path, (err, data) => {
                 if (err) {
                     rej(err);
@@ -147,20 +159,7 @@ function getFormEndHandler(event, form) {
             mainWindow.webContents.send('focusPath');
             return;
         }
-        const fileName = form.path + '.json';
-        const path = fileSystem.workspacePath + '/' + fileName;
-        const fileAlreadyExist = fileSystem.checkFileExist(path);
-        if (fileAlreadyExist) {
-            const canSave = dialog.showMessageBoxSync(mainWindow, {
-                message: `${fileName} already exists.\nDo you want to replace it?`,
-                buttons: ['Yes', 'No']
-            })
-            if (canSave === 0) {
-                saveForm(form, path);
-            }
-        } else {
-            saveForm(form, path);
-        }
+        saveForm(form);
     }
 }
 
@@ -205,7 +204,19 @@ function prepareHandlers() {
     }
 }
 
-function saveForm(form, path) {
+function saveForm(form) {
+    const fileName = form.path + '.json';
+    const path = fileSystem.currentWorkspacePath + '/' + fileName;
+    const fileAlreadyExist = fileSystem.checkFileExist(path);
+    if (fileAlreadyExist) {
+        const canSave = dialog.showMessageBoxSync(mainWindow, {
+            message: `${fileName} already exists.\nDo you want to replace it?`,
+            buttons: ['Yes', 'No']
+        })
+        if (canSave !== 0) {
+            return;
+        }
+    }
     fileSystem.saveFile(JSON.stringify(form), path).then(err => {
         if (err) {
             console.error(err);

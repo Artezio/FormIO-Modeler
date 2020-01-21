@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const pathToWorkspaceInfoFile = './data/lastWorkspace.txt';
+const pathToWorkspaceInfoFile = './data/recentWorkspaces.txt';
 
 let instance;
 class FileSystem {
@@ -8,7 +8,9 @@ class FileSystem {
         if (instance) {
             return instance;
         }
-        this._initializeWorkingSpace();
+        this.recentWorkspacePaths = [];
+        this.maxRecentWorkspaces = 5;
+        this._initializeRecentWorkspaces();
         instance = this;
     }
     static getInstance() {
@@ -18,34 +20,35 @@ class FileSystem {
         return new FileSystem();
     }
 
-    _initializeWorkingSpace() {
-        try {
-            const currentWorkingSpace = fs.readFileSync(pathToWorkspaceInfoFile);
-            ///toDo check regExp logic
-            this.workspacePath = currentWorkingSpace;
-        } catch {
-            this.workspacePath = null;
+    addRecentWorkspacePath(path) {
+        this.recentWorkspacePaths.unshift(path);
+        if (this.recentWorkspacePaths.length > this.maxRecentWorkspaces) {
+            this.recentWorkspacePaths.pop();
         }
     }
 
-    setWorkingSpace(path) {
-        this.workspacePath = path;
-        // fs.writeFile(pathToWorkspaceInfoFile, this.workspacePath, (err) => {
-        //     if (err) {
-        //         console.error(err)
-        //     } else {
+    _initializeRecentWorkspaces() {
+        try {
+            const recentWorkspacesJson = fs.readFileSync(pathToWorkspaceInfoFile, { encoding: 'utf8' });
+            if (!recentWorkspacesJson) return;
+            let recentWorkspacePaths = JSON.stringify(recentWorkspacePaths);
+            if (!Array.isArray(recentWorkspacePaths)) return;
+            recentWorkspacePaths = recentWorkspacePaths.filter(recentWorkspacePath => fs.existsSync(recentWorkspacePath));
+            recentWorkspacePaths.forEach(recentWorkspacePath => {
+                this.addRecentWorkspacePath(recentWorkspacePath);
+            })
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
-        //     }
-        // });
+    setCurrentWorkspace(path) {
+        this.currentWorkspacePath = path;
+        this.addRecentWorkspacePath(path);
     }
 
     checkFileExist(path) {
-        try {
-            return fs.existsSync(path);
-        } catch (err) {
-            console.error(err);
-            return true;
-        }
+        return fs.existsSync(path);
     }
 
     async saveFile(data, path) {
@@ -61,11 +64,11 @@ class FileSystem {
     }
 
     readFile(path, callback) {
-        fs.readFile(path, 'utf8', callback);
+        fs.readFile(path, { encoding: 'utf8' }, callback);
     }
 
     readFileSync(path) {
-        return fs.readFileSync(path, 'utf8');
+        return fs.readFileSync(path, { encoding: 'utf8' });
     }
 }
 
