@@ -3,6 +3,7 @@ const path = require('path');
 const { format } = require('url');
 const FileSystem = require('./fileSystem');
 const isForm = require('./util/isForm');
+const ElectronDialog = require('./dialog');
 
 // const fileSystem = FileSystem.getInstance();
 const fileSystem = new FileSystem();
@@ -11,22 +12,43 @@ const pathToMainPage = path.resolve(__dirname, './mainPage.html');
 const pathToStartPage = path.resolve(__dirname, './startPage.html');
 
 let mainWindow;
+let electronDialog;
+function prepareApp() {
+    app.on('ready', () => {
+        setUpMenu();
+        createMainWindow();
+        initDialog();
+        startApplication();
+    })
+    app.on('window-all-closed', () => {
+        if (process.platform !== 'darwin') {
+            app.quit()
+        }
+    })
+    app.on('activate', () => {
+        if (mainWindow === null) {
+            createMainWindow()
+        }
+    });
+}
 
-app.on('ready', () => {
-    setUpMenu();
-    createMainWindow();
+function initDialog() {
+    electronDialog = new ElectronDialog(dialog, mainWindow);
+}
 
-})
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit()
+function startApplication() {
+    if (!fileSystem.recentWorkspacePaths.length) {
+        const workspacePaths = electronDialog.selectDirectory('Select workspace');
+        if (!workspacePaths) {
+            mainWindow.close();
+            return;
+        }
+        fileSystem.setCurrentWorkspace(workspacePaths[0]);
+        showMainPage();
+    } else {
+        showStartPage();
     }
-})
-app.on('activate', () => {
-    if (mainWindow === null) {
-        createMainWindow()
-    }
-});
+}
 
 function createMainWindow() {
     const unsubscribe = prepareHandlers();
@@ -42,21 +64,6 @@ function createMainWindow() {
         mainWindow = null;
         unsubscribe();
     })
-
-    if (!fileSystem.recentWorkspacePaths.length) {
-        const workspacePaths = dialog.showOpenDialogSync(mainWindow, {
-            properties: ['openDirectory'],
-            title: 'Select workspace'
-        })
-        if (!workspacePaths) {
-            mainWindow.close();
-            return;
-        }
-        fileSystem.setCurrentWorkspace(workspacePaths[0]);
-        showMainPage();
-    } else {
-        showStartPage();
-    }
 }
 
 function showPage(path) {
@@ -151,11 +158,14 @@ function getSubFormsStartHandler() {
 }
 
 function getFormEndHandler(event, form) {
-    if (form) {
+    if (!isForm(form)) {
+        if (!form.title) {
+            electronDialog.alert('Enter title to save form.');
+            mainWindow.webContents.send('focusTitle');
+            return;
+        }
         if (!form.path) {
-            dialog.showMessageBoxSync(mainWindow, {
-                message: 'Enter path to save form.'
-            })
+            electronDialog.alert('Enter path to save form.');
             mainWindow.webContents.send('focusPath');
             return;
         }
@@ -164,16 +174,8 @@ function getFormEndHandler(event, form) {
 }
 
 function openForm(event, arg) {
-    const formPaths = dialog.showOpenDialogSync(mainWindow,
-        {
-            filters: [
-                { name: 'formio', extensions: ['json'] },
-            ],
-
-            properties: ['openFile']
-        });
-    if (!formPaths) return;
-    const formPath = formPaths[0];
+    const formPath = electronDialog.selectJsonFile();
+    if (!formPath) return;
     try {
         const form = JSON.parse(fileSystem.readFileSync(formPath));
         if (!isForm(form)) {
@@ -209,13 +211,8 @@ function saveForm(form) {
     const path = fileSystem.currentWorkspacePath + '/' + fileName;
     const fileAlreadyExist = fileSystem.checkFileExist(path);
     if (fileAlreadyExist) {
-        const canSave = dialog.showMessageBoxSync(mainWindow, {
-            message: `${fileName} already exists.\nDo you want to replace it?`,
-            buttons: ['Yes', 'No']
-        })
-        if (canSave !== 0) {
-            return;
-        }
+        const canSave = electronDialog.confirm(`${fileName} already exists.\nDo you want to replace it?`);
+        if (!canSave) return;
     }
     fileSystem.saveFile(JSON.stringify(form), path).then(err => {
         if (err) {
@@ -225,3 +222,5 @@ function saveForm(form) {
         }
     })
 }
+
+prepareApp();
