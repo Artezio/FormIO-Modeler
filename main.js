@@ -158,7 +158,7 @@ function getSubFormsStartHandler() {
 }
 
 function getFormEndHandler(event, form) {
-    if (!isForm(form)) {
+    if (isForm(form)) {
         if (!form.title) {
             electronDialog.alert('Enter title to save form.');
             mainWindow.webContents.send('focusTitle');
