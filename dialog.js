@@ -1,15 +1,38 @@
 class ElectronDialog {
-    constructor(dialog, window) {
+    constructor(dialog, window, constants = {}) {
         this.dialog = dialog;
         this.window = window;
+        this.constants = constants;
     }
 
-    confirm(message) {
+    confirmReplaceFile(fileName) {
         const answer = this.dialog.showMessageBoxSync(this.window, {
-            message,
+            message: `${fileName} already exists.\nDo you want to replace it?`,
+            cancelId: 1,
+            defaultId: 1,
+            title: 'Save File',
             buttons: ['Yes', 'No']
         })
-        return answer === 0;
+        console.log('log', answer);
+        return answer === 0 ? this.constants.YES : this.constants.NO;
+    }
+
+    confirmCloseMainWindow() {
+        const answer = this.dialog.showMessageBoxSync(this.window, {
+            message: 'Save changes before closing?',
+            type: 'question',
+            title: 'Close File',
+            cancelId: 0,
+            defaultId: 0,
+            noLink: true,
+            buttons: ['Cancel', 'Save', 'Don\' Save']
+        })
+        switch (answer) {
+            case 0: return this.constants.CANCEL;
+            case 1: return this.constants.SAVE;
+            case 2: return this.constants.DONT_SAVE;
+            default: return this.constants.CANCEL;
+        }
     }
 
     alert(message) {
@@ -19,10 +42,11 @@ class ElectronDialog {
     }
 
     selectDirectory(title) {
-        return this.dialog.showOpenDialogSync(this.window, {
+        const paths = this.dialog.showOpenDialogSync(this.window, {
             properties: ['openDirectory'],
             title
         })
+        return paths && paths[0];
     }
 
     selectJsonFile() {

@@ -8,9 +8,6 @@ const jsonViewer = new JSONViewer();
 
 let form = {};
 let formStatus;
-let savedStatus;
-const SAVED = 'saved';
-const NOT_SAVED = 'NOT_SAVED';
 const EDIT = 'EDIT';
 const CREATE = 'CREATE';
 const NO_DATA_SUBMITTED = 'No data submitted';
@@ -31,14 +28,6 @@ function run() {
         unsubscribe()
     })
     appendNoDataSubmittedMessage();
-}
-
-function setSaved() {
-    savedStatus = SAVED;
-}
-
-function setUnsaved() {
-    savedStatus = NOT_SAVED;
 }
 
 function setFormDetails(details = {}) {
@@ -94,7 +83,11 @@ function updateForm(newForm = {}) {
         type: 'form',
         ...newForm
     };
-    setUnsaved();
+    sendFormWasChanged();
+}
+
+function sendFormWasChanged() {
+    ipcRenderer.send('formWasChanged', form);
 }
 
 function setFormStatusCreate() {
@@ -163,13 +156,12 @@ function formWasSavedHandler(event, arg) {
         notification.remove();
     }, 3000);
     setFormStatusEdit();
-    setSaved();
 }
 
-function getFormHandler(event, arg) {
-    handleFormChange();/// to replace!
-    ipcRenderer.send('getForm.end', form);
-}
+// function getFormHandler(event, arg) {
+//     handleFormChange();/// to replace!
+//     ipcRenderer.send('getForm.end', form);
+// }
 
 function createNewFormHandler(event, arg) {
     showMainContent();
@@ -183,7 +175,6 @@ function openFormHandler(event, form) {
     setFormDetails(form);
     attachFormio(form);
     setFormStatusEdit();
-    setSaved();
 }
 
 function showMainContent() {
@@ -198,27 +189,21 @@ function focusTitleHandler() {
     titleElement && titleElement.focus();
 }
 
-function isFormSavedStartHandler() {
-    ipcRenderer.send('isFormSaved.end', formStatus === SAVED);
-}
-
 function prepareHandlers() {
-    ipcRenderer.on('getForm.start', getFormHandler);
+    // ipcRenderer.on('getForm.start', getFormHandler);
     ipcRenderer.on('formWasSaved', formWasSavedHandler);
     ipcRenderer.on('createNewForm', createNewFormHandler);
     ipcRenderer.on('openForm', openFormHandler);
     ipcRenderer.on('focusPath', focusPathHandler);
     ipcRenderer.on('focusTitle', focusTitleHandler);
-    ipcRenderer.on('isFormSaved.start', isFormSavedStartHandler);
 
     return function () {
-        ipcRenderer.removeListener('getForm.start', getFormHandler);
+        // ipcRenderer.removeListener('getForm.start', getFormHandler);
         ipcRenderer.removeListener('formWasSaved', formWasSavedHandler);
         ipcRenderer.removeListener('createNewForm', createNewFormHandler);
         ipcRenderer.removeListener('openForm', openFormHandler);
         ipcRenderer.removeListener('focusPath', focusPathHandler);
         ipcRenderer.removeListener('focusTitle', focusTitleHandler);
-        ipcRenderer.removeListener('isFormSaved.start', isFormSavedStartHandler);
     }
 }
 
