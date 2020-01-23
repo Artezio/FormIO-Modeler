@@ -6,9 +6,10 @@ const isForm = require('./util/isForm');
 const ElectronDialog = require('./dialog');
 const fs = require('fs');
 const FormProvider = require('./formProvider');
+const fileNameFromPath = require('./util/fileNameFromPath');
 
 // const fileSystem = FileSystem.getInstance();
-const fileSystem = new FileSystem();
+// const fileSystem = new FileSystem();
 const formProvider = new FormProvider();
 
 const PATH_TO_WORKSPACES_INFO = path.resolve(__dirname, './data/recentWorkspaces.txt');
@@ -50,6 +51,7 @@ function setForm(newForm) {
 }
 
 function addRecentWorkspacePath(path) {
+    if (recentWorkspacePaths.indexOf(path) !== -1) return;
     recentWorkspacePaths.unshift(path);
     if (recentWorkspacePaths.length > MAX_RECENT_WORKSPACES) {
         recentWorkspacePaths.pop();
@@ -60,6 +62,13 @@ function setCurrentWorkspace(path) {
     currentWorkspacePath = path;
     addRecentWorkspacePath(path);
     formProvider.setWorkspacePath(path);
+    saveRecentWorkspaces();
+    setUpMenu();
+}
+
+function saveRecentWorkspaces() {
+    const data = JSON.stringify(recentWorkspacePaths);
+    fs.writeFileSync(PATH_TO_WORKSPACES_INFO, data, { encoding: 'utf8' });
 }
 
 function prepareApp() {
@@ -87,12 +96,16 @@ function initDialog() {
 
 function initWorkspace() {
     try {
-        let workspacePaths = fs.readFileSync(PATH_TO_WORKSPACES_INFO, { encoding: 'utf8' });
-        workspacePaths = JSON.parse(workspacePaths);
-        if (Array.isArray(workspacePaths)) {
-            throw new Error();
+        if (fs.existsSync(PATH_TO_WORKSPACES_INFO)) {
+            let workspacePaths = fs.readFileSync(PATH_TO_WORKSPACES_INFO, { encoding: 'utf8' });
+            workspacePaths = JSON.parse(workspacePaths);
+            if (!Array.isArray(workspacePaths)) {
+                throw new Error('Workspaces are not valid');
+            }
+            recentWorkspacePaths.push(...workspacePaths);
+        } else {
+            throw new Error('Workspaces not found');
         }
-        recentWorkspacePaths.push(...workspacePaths);
     } catch (err) {
         console.error(err);
     }
@@ -101,16 +114,25 @@ function initWorkspace() {
 function startApplication() {
     initWorkspace();
     if (!recentWorkspacePaths.length) {
-        const workspacePath = electronDialog.selectDirectory('Select workspace');
-        if (!workspacePath) {
-            mainWindow.close();
-            return;
-        }
-        setCurrentWorkspace(workspacePath);
-        showMainPage();
+        selectNewWorkspace();
     } else {
-        showStartPage();
+        showStartPage().then(() => {
+            showRecentWorkspaces();
+        })
     }
+}
+
+function selectNewWorkspace() {
+    const workspacePath = electronDialog.selectDirectory('Select workspace');
+    if (!workspacePath) {
+        return;
+    }
+    setCurrentWorkspace(workspacePath);
+    showMainPage();
+}
+
+function showRecentWorkspaces() {
+    mainWindow.webContents.send('showRecentWorkspaces', recentWorkspacePaths);
 }
 
 function createMainWindow() {
@@ -156,7 +178,7 @@ function saveFormAndQuit() {
 }
 
 function showPage(path) {
-    mainWindow.loadURL(format({
+    return mainWindow.loadURL(format({
         pathname: path,
         protocol: 'file',
         slashes: true
@@ -164,10 +186,10 @@ function showPage(path) {
 }
 
 function showStartPage() {
-    showPage(PATH_TO_START_PAGE);
+    return showPage(PATH_TO_START_PAGE);
 }
 function showMainPage() {
-    showPage(PATH_TO_MAIN_PAGE);
+    return showPage(PATH_TO_MAIN_PAGE);
 }
 
 const menuTemplate = [
@@ -188,6 +210,10 @@ const menuTemplate = [
                 label: 'Save',
                 accelerator: 'CmdOrCtrl+S',
                 click: startFormSaving
+            },
+            {
+                label: 'Change workspace',
+                click: reselectWorkspace
             }
         ]
     },
@@ -201,6 +227,35 @@ const menuTemplate = [
     }
 ]
 
+function reselectWorkspace() {
+    if (savedStatus !== SAVED) {
+        const answer = electronDialog.confirmChangeWorkspace();
+        switch (answer) {
+            case CONFIRM_CONSTANTS.CANCEL: {
+                return;
+            }
+            case CONFIRM_CONSTANTS.SAVE: {
+                saveFormAndChangeWorkspace();
+                return;
+            }
+            case CONFIRM_CONSTANTS.DONT_SAVE: {
+                break;
+            }
+            default: {
+                return;
+            }
+        }
+    }
+    selectNewWorkspace();
+}
+
+function saveFormAndChangeWorkspace() {
+    startFormSaving();
+    if (savedStatus === SAVED) {
+        selectNewWorkspace();
+    }
+}
+
 function setUpMenu() {
     if (process.platform === 'darwin') {
         menuTemplate.unshift({});
@@ -208,6 +263,11 @@ function setUpMenu() {
     if (process.env.NODE_ENV === 'production') {
         menuTemplate.pop();
     }
+    ///лютый пиздец, убрать эту хуйню первым делом!
+    for (let i = 0; i < 3; i++) {
+        menuTemplate[0].submenu[i].enabled = Boolean(currentWorkspacePath);
+    }
+    ///
     const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
 }
@@ -291,7 +351,7 @@ function openForm(event, arg) {
     // const form = JSON.parse(fileSystem.readFileSync(formPath));
     formProvider.getForm(formPath).then(form => {
         if (!isForm(form)) {
-            electronDialog.alert('Not valid form');//change message!
+            electronDialog.alert(`${fileNameFromPath(formPath)} is not valid form`);
             return;
         }
         mainWindow.webContents.send('openForm', form);
@@ -304,15 +364,26 @@ function createNewForm() {
     mainWindow.webContents.send('createNewForm');
 }
 
+function setWorkspaceHandler(event, workspacePath) {
+    setCurrentWorkspace(workspacePath);
+    showMainPage();
+}
+
+function openNewWorkspaceHandler() {
+    selectNewWorkspace();
+}
+
 function prepareHandlers() {
-    // ipcMain.on('getForm.end', getFormEndHandler);
     ipcMain.on('getSubForms.start', getSubFormsStartHandler);
     ipcMain.on('formWasChanged', formWasChangedHandler);
+    ipcMain.on('setWorkspace', setWorkspaceHandler);
+    ipcMain.on('openNewWorkspace', openNewWorkspaceHandler);
 
     return function () {
-        // ipcMain.removeListener('getForm.end', getFormEndHandler);
         ipcMain.removeListener('getSubForms.start', getSubFormsStartHandler);
         ipcMain.removeListener('formWasChanged', formWasChangedHandler);
+        ipcMain.removeListener('setWorkspace', setWorkspaceHandler);
+        ipcMain.removeListener('openNewWorkspace', openNewWorkspaceHandler);
     }
 }
 

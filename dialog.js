@@ -13,8 +13,25 @@ class ElectronDialog {
             title: 'Save File',
             buttons: ['Yes', 'No']
         })
-        console.log('log', answer);
         return answer === 0 ? this.constants.YES : this.constants.NO;
+    }
+
+    confirmChangeWorkspace() {
+        const answer = this.dialog.showMessageBoxSync(this.window, {
+            message: 'Save changes before changing workspace?',
+            type: 'question',
+            title: 'Change Workspace',
+            cancelId: 0,
+            defaultId: 0,
+            noLink: true,
+            buttons: ['Cancel', 'Save', 'Don\' Save']
+        })
+        switch (answer) {
+            case 0: return this.constants.CANCEL;
+            case 1: return this.constants.SAVE;
+            case 2: return this.constants.DONT_SAVE;
+            default: return this.constants.CANCEL;
+        }
     }
 
     confirmCloseMainWindow() {

@@ -190,7 +190,6 @@ function focusTitleHandler() {
 }
 
 function prepareHandlers() {
-    // ipcRenderer.on('getForm.start', getFormHandler);
     ipcRenderer.on('formWasSaved', formWasSavedHandler);
     ipcRenderer.on('createNewForm', createNewFormHandler);
     ipcRenderer.on('openForm', openFormHandler);
@@ -198,7 +197,6 @@ function prepareHandlers() {
     ipcRenderer.on('focusTitle', focusTitleHandler);
 
     return function () {
-        // ipcRenderer.removeListener('getForm.start', getFormHandler);
         ipcRenderer.removeListener('formWasSaved', formWasSavedHandler);
         ipcRenderer.removeListener('createNewForm', createNewFormHandler);
         ipcRenderer.removeListener('openForm', openFormHandler);
