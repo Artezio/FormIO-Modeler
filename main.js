@@ -26,7 +26,7 @@ const CONFIRM_CONSTANTS = {
     SAVE: 'SAVE'
 }
 
-let form;
+let form = {};
 let savedStatus = SAVED;
 const recentWorkspacePaths = [];
 let currentWorkspacePath;
@@ -55,7 +55,7 @@ function formWasChangedHandler(event, form) {
 }
 
 function setForm(newForm) {
-    form = newForm;
+    form = newForm || {};
 }
 
 function addRecentWorkspacePath(path) {
@@ -379,6 +379,7 @@ function openForm(event, arg) {
 
 function createNewForm() {
     mainWindow.webContents.send('createNewForm', PATH_TO_WORKSPACES_INFO);
+    setUnsaved();
 }
 
 function setWorkspaceHandler(event, workspacePath) {

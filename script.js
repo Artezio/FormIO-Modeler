@@ -22,7 +22,7 @@ const jsonViewerContainer = jsonViewer.getContainer();
 function run() {
     overrideFormioRequest();
     const unsubscribe = prepareHandlers();
-    formElement.addEventListener('change', handleFormChange);
+    formElement.addEventListener('input', handleFormChange);
     formElement.onsubmit = e => e.preventDefault();
     document.addEventListener('unload', () => {
         unsubscribe()
