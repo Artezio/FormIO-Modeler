@@ -12,9 +12,9 @@ const fileNameFromPath = require('./util/fileNameFromPath');
 // const fileSystem = new FileSystem();
 const formProvider = new FormProvider();
 
-const PATH_TO_WORKSPACES_INFO = path.resolve(__dirname, './data/recentWorkspaces.txt');
-const PATH_TO_MAIN_PAGE = path.resolve(__dirname, './mainPage.html');
-const PATH_TO_START_PAGE = path.resolve(__dirname, './startPage.html');
+const PATH_TO_WORKSPACES_INFO = path.resolve(app.getAppPath(), './data/recentWorkspaces.txt');
+const PATH_TO_MAIN_PAGE = path.resolve(app.getAppPath(), './mainPage.html');
+const PATH_TO_START_PAGE = path.resolve(app.getAppPath(), './startPage.html');
 const SAVED = 'saved';
 const NOT_SAVED = 'NOT_SAVED';
 const MAX_RECENT_WORKSPACES = 5;
@@ -51,7 +51,10 @@ function setForm(newForm) {
 }
 
 function addRecentWorkspacePath(path) {
-    if (recentWorkspacePaths.indexOf(path) !== -1) return;
+    const existedPathIndex = recentWorkspacePaths.indexOf(path);
+    if (existedPathIndex !== -1) {
+        recentWorkspacePaths.splice(existedPathIndex, 1);
+    }
     recentWorkspacePaths.unshift(path);
     if (recentWorkspacePaths.length > MAX_RECENT_WORKSPACES) {
         recentWorkspacePaths.pop();
@@ -64,6 +67,7 @@ function setCurrentWorkspace(path) {
     formProvider.setWorkspacePath(path);
     saveRecentWorkspaces();
     setUpMenu();
+    setSaved();
 }
 
 function saveRecentWorkspaces() {
@@ -280,6 +284,7 @@ function toggleDevTools(item, focusedWindow) {
 
 function startFormSaving() {
     // mainWindow.webContents.send('getForm.start');
+    if (savedStatus === SAVED) return;
     if (!isForm(form)) {
         form = form || {};
         if (!form.title) {
