@@ -12,7 +12,7 @@ const fileNameFromPath = require('./util/fileNameFromPath');
 // const fileSystem = new FileSystem();
 const formProvider = new FormProvider();
 
-const PATH_TO_WORKSPACES_INFO = path.resolve(app.getAppPath(), './data/recentWorkspaces.txt');
+const PATH_TO_WORKSPACES_INFO = getAppPath();
 const PATH_TO_MAIN_PAGE = path.resolve(app.getAppPath(), './mainPage.html');
 const PATH_TO_START_PAGE = path.resolve(app.getAppPath(), './startPage.html');
 const SAVED = 'saved';
@@ -32,6 +32,14 @@ const recentWorkspacePaths = [];
 let currentWorkspacePath;
 let mainWindow;
 let electronDialog;
+
+function getAppPath() {
+    return path.resolve(app.getAppPath(), '../recentWorkspaces.txt');
+    // if (process.env.NODE_ENV === 'production') {
+    //     return path.resolve(app.getAppPath(), '../recentWorkspaces.txt');
+    // }
+    // return path.resolve(app.getAppPath(), './data/recentWorkspaces.txt')
+}
 
 function setSaved() {
     savedStatus = SAVED;
@@ -72,7 +80,11 @@ function setCurrentWorkspace(path) {
 
 function saveRecentWorkspaces() {
     const data = JSON.stringify(recentWorkspacePaths);
-    fs.writeFileSync(PATH_TO_WORKSPACES_INFO, data, { encoding: 'utf8' });
+    try {
+        fs.writeFileSync(PATH_TO_WORKSPACES_INFO, data, { encoding: 'utf8' });
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 function prepareApp() {
@@ -366,7 +378,7 @@ function openForm(event, arg) {
 }
 
 function createNewForm() {
-    mainWindow.webContents.send('createNewForm');
+    mainWindow.webContents.send('createNewForm', PATH_TO_WORKSPACES_INFO);
 }
 
 function setWorkspaceHandler(event, workspacePath) {

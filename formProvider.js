@@ -65,11 +65,16 @@ class FormProvider {
                 if (err) {
                     rej(err);
                 } else {
-                    res(JSON.parse(data))
+                    try {
+                        res(JSON.parse(data))
+                    } catch (err) {
+                        rej(err);
+                    }
                 }
             })
         })))
         const forms = await promise;
+        if (!Array.isArray(forms)) return [];
         return forms.filter(isForm);
     }
 
