@@ -18,6 +18,17 @@ const mainContentWrapper = document.getElementById('mainContentWrapper');
 const viewDataContainerElement = document.getElementById('viewData');
 const viewDataTabElement = document.getElementById('view-data-tab');
 const jsonViewerContainer = jsonViewer.getContainer();
+const builderContainer = document.getElementById('builder');
+const previewContainer = document.getElementById('preview');
+
+let formioBuilder;
+let unsubscribeBuilderRender;
+let formioRenderer;
+let unsubscribeRendererSubmit;
+
+const formRendererOptions = {
+    noAlerts: true
+}
 
 function run() {
     overrideFormioRequest();
@@ -56,12 +67,13 @@ function overrideFormioRequest() {
         return async function (...args) {
             const _baseUrl = args[2];
             if (typeof _baseUrl === 'string' && regExp.test(_baseUrl)) {
-                const subForms = await new Promise((res, rej) => {
+                const promise = new Promise((res, rej) => {
                     ipcRenderer.send('getSubForms.start');
                     ipcRenderer.once('getSubForms.end', (event, subForms) => {
                         res(subForms);
                     });
                 })
+                const subForms = await promise;
                 if (formStatus === EDIT) {
                     return subForms.filter(subForm => subForm.path !== form.path);
                 }
@@ -99,30 +111,57 @@ function setFormStatusEdit() {
 }
 
 function attachFormio(schema = {}) {
-    Formio.builder(document.getElementById('builder'), schema).then(builder => {
-        const previewElement = document.getElementById('preview');
-        let formInstance;
-        Formio.createForm(previewElement, schema, {
-            noAlerts: true
-        }).then(instance => {
-            formInstance = instance;
-            instance.nosubmit = true;
-            instance.on('submit', submission => {
-                instance.emit('submitDone', submission);
-            })
-            instance.on('submitDone', fomrioSubmitDoneHandler);
-        })
-        builder.on('change', schema => {
-            updateForm(schema);
-            if (formInstance) {
-                formInstance.setForm(schema);
-            }
-            appendNoDataSubmittedMessage();
-        });
+    attachFormBuilder(schema);
+    attachFormioRenderer(schema);
+}
+
+function attachFormBuilder(schema) {
+    unsubscribeBuilderRender && unsubscribeBuilderRender();
+    Formio.builder(builderContainer, schema).then(builderInstance => {
+        formioBuilder = builderInstance;
+        subscribeBuilderRender();
     })
 }
 
-function fomrioSubmitDoneHandler(submission) {
+function attachFormioRenderer(schema) {
+    unsubscribeRendererSubmit && unsubscribeRendererSubmit();
+    Formio.createForm(previewContainer, schema, formRendererOptions).then(rendererInstance => {
+        formioRenderer = rendererInstance;
+        subscribeRendererSubmit();
+    })
+}
+
+function subscribeRendererSubmit() {
+    if (formioRenderer) {
+        formioRenderer.on('submit', formioSubmissionHandler);
+        unsubscribeRendererSubmit = function () {
+            formioRenderer.removeEventListener('submit', formioSubmissionHandler);
+            unsubscribeRendererSubmit = null;
+        }
+    }
+}
+function formioSubmissionHandler(submission) {
+    // formioRenderer && formioRenderer.emit('submitDone', submission);
+    domeSubmit(submission);
+}
+
+function subscribeBuilderRender() {
+    formioBuilder && formioBuilder.on('render', builderRenderedHandler);
+    unsubscribeBuilderRender = function () {
+        formioBuilder && formioBuilder.removeEventListener('render', builderRenderedHandler);
+        unsubscribeBuilderRender = null;
+    }
+}
+
+function builderRenderedHandler() {
+    if (formioBuilder) {
+        const schema = formioBuilder.schema;
+        updateForm(schema);
+        formioRenderer && formioRenderer.setForm(schema);
+    }
+}
+
+function domeSubmit(submission) {
     $(viewDataTabElement).tab('show');
     jsonViewer.showJSON(submission && submission.data);
     appendJsonViewer();
@@ -158,11 +197,6 @@ function formWasSavedHandler(event, arg) {
     setFormStatusEdit();
 }
 
-// function getFormHandler(event, arg) {
-//     handleFormChange();/// to replace!
-//     ipcRenderer.send('getForm.end', form);
-// }
-
 function createNewFormHandler(event, arg) {
     showMainContent();
     resetFormDetails();
@@ -181,7 +215,7 @@ function showMainContent() {
     mainContentWrapper.style.display = "";
 }
 
-function focusPathHandler(event, arg) {
+function focusPathHandler() {
     pathElement && pathElement.focus();
 }
 

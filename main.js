@@ -1,18 +1,15 @@
 const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const path = require('path');
 const { format } = require('url');
-const FileSystem = require('./fileSystem');
 const isForm = require('./util/isForm');
 const ElectronDialog = require('./dialog');
 const fs = require('fs');
 const FormProvider = require('./formProvider');
 const fileNameFromPath = require('./util/fileNameFromPath');
 
-// const fileSystem = FileSystem.getInstance();
-// const fileSystem = new FileSystem();
 const formProvider = new FormProvider();
 
-const PATH_TO_WORKSPACES_INFO = getAppPath();
+const PATH_TO_WORKSPACES_INFO = path.resolve(app.getAppPath(), '../recentWorkspaces.txt');
 const PATH_TO_MAIN_PAGE = path.resolve(app.getAppPath(), './mainPage.html');
 const PATH_TO_START_PAGE = path.resolve(app.getAppPath(), './startPage.html');
 const SAVED = 'saved';
@@ -32,14 +29,6 @@ const recentWorkspacePaths = [];
 let currentWorkspacePath;
 let mainWindow;
 let electronDialog;
-
-function getAppPath() {
-    return path.resolve(app.getAppPath(), '../recentWorkspaces.txt');
-    // if (process.env.NODE_ENV === 'production') {
-    //     return path.resolve(app.getAppPath(), '../recentWorkspaces.txt');
-    // }
-    // return path.resolve(app.getAppPath(), './data/recentWorkspaces.txt')
-}
 
 function setSaved() {
     savedStatus = SAVED;
@@ -152,7 +141,7 @@ function showRecentWorkspaces() {
 }
 
 function createMainWindow() {
-    const unsubscribe = prepareHandlers();
+    const unsubscribe = subscribeOnEvents();
 
     mainWindow = new BrowserWindow({
         height: 800,
@@ -295,7 +284,6 @@ function toggleDevTools(item, focusedWindow) {
 }
 
 function startFormSaving() {
-    // mainWindow.webContents.send('getForm.start');
     if (savedStatus === SAVED) return;
     if (!isForm(form)) {
         form = form || {};
@@ -314,58 +302,15 @@ function startFormSaving() {
     saveForm(form);
 }
 
-// function getSubFormsStartHandler() {
-//     if (!fileSystem.currentWorkspacePath) return [];
-//     fileSystem.readDir(fileSystem.currentWorkspacePath).then(fileNames => {
-//         if (!Array.isArray(fileNames)) {
-//             mainWindow.webContents.send('getSubForms.end', []);
-//             return;
-//         }
-//         Promise.all(fileNames.map(fileName => new Promise((res, rej) => {
-//             const path = fileSystem.currentWorkspacePath + '\\' + fileName;
-//             fileSystem.readFile(path, (err, data) => {
-//                 if (err) {
-//                     rej(err);
-//                 } else {
-//                     res(JSON.parse(data))
-//                 }
-//             })
-//         })))
-//             .then(forms => forms.filter(isForm))
-//             .then(forms => {
-//                 mainWindow.webContents.send('getSubForms.end', forms);
-//             })
-//     })
-// }
-
 function getSubFormsStartHandler() {
     formProvider.getForms().then(forms => {
         mainWindow.webContents.send('getSubForms.end', forms);
     })
 }
 
-// function getFormEndHandler(event, form) {
-//     if (!isForm(form)) {
-//         form = form || {};
-//         if (!form.title) {
-//             electronDialog.alert('Enter title to save form.');
-//             mainWindow.webContents.send('focusTitle');
-//             return;
-//         }
-//         if (!form.path) {
-//             electronDialog.alert('Enter path to save form.');
-//             mainWindow.webContents.send('focusPath');
-//             return;
-//         }
-//         return;
-//     }
-//     saveForm(form);
-// }
-
 function openForm(event, arg) {
     const formPath = electronDialog.selectJsonFile();
     if (!formPath) return;
-    // const form = JSON.parse(fileSystem.readFileSync(formPath));
     formProvider.getForm(formPath).then(form => {
         if (!isForm(form)) {
             electronDialog.alert(`${fileNameFromPath(formPath)} is not valid form`);
@@ -379,6 +324,7 @@ function openForm(event, arg) {
 
 function createNewForm() {
     mainWindow.webContents.send('createNewForm', PATH_TO_WORKSPACES_INFO);
+    setForm();
     setUnsaved();
 }
 
@@ -391,7 +337,7 @@ function openNewWorkspaceHandler() {
     selectNewWorkspace();
 }
 
-function prepareHandlers() {
+function subscribeOnEvents() {
     ipcMain.on('getSubForms.start', getSubFormsStartHandler);
     ipcMain.on('formWasChanged', formWasChangedHandler);
     ipcMain.on('setWorkspace', setWorkspaceHandler);
@@ -407,8 +353,6 @@ function prepareHandlers() {
 
 function saveForm(form) {
     const fileName = form.path + '.json';
-    // const path = currentWorkspacePath + '/' + fileName;
-    // const fileAlreadyExist = fileSystem.checkFileExist(path);
     const fileAlreadyExist = formProvider.exists(form.path);
     if (fileAlreadyExist) {
         const canSave = electronDialog.confirmReplaceFile(fileName);
