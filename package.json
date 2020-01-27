@@ -6,7 +6,7 @@
   "dependencies": {
     "bootstrap": "^4.4.1",
     "electron-json-storage": "^4.1.8",
-    "formiojs": "^4.8.0",
+    "formiojs": "4.7.x",
     "jquery": "^3.4.1",
     "jquery.json-viewer": "^1.4.0",
     "notifyjs": "^3.0.0",

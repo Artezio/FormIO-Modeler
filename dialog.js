@@ -1,8 +1,9 @@
+const { CONFIRM_CONSTANTS } = require('./constants');
+
 class ElectronDialog {
-    constructor(dialog, window, constants = {}) {
+    constructor(dialog, window) {
         this.dialog = dialog;
         this.window = window;
-        this.constants = constants;
     }
 
     confirmReplaceFile(fileName) {
@@ -13,7 +14,7 @@ class ElectronDialog {
             title: 'Save File',
             buttons: ['Yes', 'No']
         })
-        return answer === 0 ? this.constants.YES : this.constants.NO;
+        return answer === 0 ? CONFIRM_CONSTANTS.YES : CONFIRM_CONSTANTS.NO;
     }
 
     confirmChangeWorkspace() {
@@ -27,10 +28,10 @@ class ElectronDialog {
             buttons: ['Cancel', 'Save', 'Don\' Save']
         })
         switch (answer) {
-            case 0: return this.constants.CANCEL;
-            case 1: return this.constants.SAVE;
-            case 2: return this.constants.DONT_SAVE;
-            default: return this.constants.CANCEL;
+            case 0: return CONFIRM_CONSTANTS.CANCEL;
+            case 1: return CONFIRM_CONSTANTS.SAVE;
+            case 2: return CONFIRM_CONSTANTS.DONT_SAVE;
+            default: return CONFIRM_CONSTANTS.CANCEL;
         }
     }
 
@@ -45,10 +46,10 @@ class ElectronDialog {
             buttons: ['Cancel', 'Save', 'Don\' Save']
         })
         switch (answer) {
-            case 0: return this.constants.CANCEL;
-            case 1: return this.constants.SAVE;
-            case 2: return this.constants.DONT_SAVE;
-            default: return this.constants.CANCEL;
+            case 0: return CONFIRM_CONSTANTS.CANCEL;
+            case 1: return CONFIRM_CONSTANTS.SAVE;
+            case 2: return CONFIRM_CONSTANTS.DONT_SAVE;
+            default: return CONFIRM_CONSTANTS.CANCEL;
         }
     }
 

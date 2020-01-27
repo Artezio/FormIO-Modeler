@@ -1,8 +1,11 @@
 const { ipcRenderer } = require('electron');
 const { Formio } = require('formiojs');
 const $ = require('jquery');
+const JSONViewer = require('./json-viewer');
+const initJQueryNotify = require('./notify');
+
 require('bootstrap');
-require('./notify')();
+initJQueryNotify();
 
 const NO_DATA_SUBMITTED = 'No data submitted';
 const formDetailsElement = document.forms.formDetails;
@@ -15,13 +18,7 @@ const builderContainer = document.getElementById('builder');
 const formContainer = document.getElementById('preview');
 
 let formBuilder;
-let unsubscribeBuilderRender;
 let form;
-let unsubscribeRendererSubmit;
-
-const formRendererOptions = {
-    noAlerts: true
-}
 
 function run() {
     overrideFormioRequest();
@@ -84,7 +81,9 @@ function attachFormio(schema = {}) {
         formBuilder.off('render');
         formBuilder.on('render', schemaChangedHandler);
     })
-    Formio.createForm(formContainer, schema, formRendererOptions).then(rendererInstance => {
+    Formio.createForm(formContainer, schema, {
+        noAlerts: true
+    }).then(rendererInstance => {
         form = rendererInstance;
         form.nosubmit = true;
         form.off('submit');
@@ -101,9 +100,7 @@ function schemaChangedHandler() {
     const schema = formBuilder.schema;
     form && form.setForm(schema);
     hideSubmission();
-    if (form) {
-        form.submission = { data: {} };
-    }
+    form && form.resetValue();
     emitFormChanged();
 }
 

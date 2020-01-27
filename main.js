@@ -104,7 +104,7 @@ function prepareApp() {
 }
 
 function initDialog() {
-    electronDialog = new ElectronDialog(dialog, mainWindow, CONFIRM_CONSTANTS);
+    electronDialog = new ElectronDialog(dialog, mainWindow);
 }
 
 function initWorkspace() {
@@ -331,7 +331,8 @@ function openForm(event, arg) {
 }
 
 function createNewForm() {
-    mainWindow.webContents.send('createNewForm', PATH_TO_WORKSPACES_INFO);
+    console.log(123)
+    mainWindow.webContents.send('createNewForm');
     setForm();
     setUnsaved();
 }

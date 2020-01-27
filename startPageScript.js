@@ -1,5 +1,4 @@
 const { ipcRenderer } = require('electron');
-const fileNameFromPath = require('./util/fileNameFromPath');
 
 
 const ulElement = document.getElementById('workspacesList');
