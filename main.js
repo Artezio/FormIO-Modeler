@@ -44,7 +44,15 @@ function formWasChangedHandler(event, form) {
 }
 
 function setForm(newForm) {
-    form = newForm || {};
+    if (!newForm) {
+        form = {
+            type: 'form'
+        }
+    }
+    form = {
+        ...newForm,
+        type: 'form'
+    };
 }
 
 function addRecentWorkspacePath(path) {

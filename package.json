@@ -9,6 +9,7 @@
     "formiojs": "^4.8.0",
     "jquery": "^3.4.1",
     "jquery.json-viewer": "^1.4.0",
+    "notifyjs": "^3.0.0",
     "popper.js": "^1.16.0",
     "uuid": "^3.3.3"
   },
