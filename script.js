@@ -4,8 +4,6 @@ const { Formio } = require('formiojs');
 const $ = require('jquery');
 require('bootstrap');
 
-const jsonViewer = new JSONViewer();
-
 let form = {};
 let formStatus;
 const EDIT = 'EDIT';
@@ -15,9 +13,8 @@ const formElement = document.forms.formDetails;
 const pathElement = document.getElementById('formPath');
 const titleElement = document.getElementById('formTitle');
 const mainContentWrapper = document.getElementById('mainContentWrapper');
-const viewDataContainerElement = document.getElementById('viewData');
+const submissionContainer = document.getElementById('viewData');
 const viewDataTabElement = document.getElementById('view-data-tab');
-const jsonViewerContainer = jsonViewer.getContainer();
 const builderContainer = document.getElementById('builder');
 const previewContainer = document.getElementById('preview');
 
@@ -38,7 +35,6 @@ function run() {
     document.addEventListener('unload', () => {
         unsubscribe()
     })
-    appendNoDataSubmittedMessage();
 }
 
 function setFormDetails(details = {}) {
@@ -127,6 +123,7 @@ function attachFormioRenderer(schema) {
     unsubscribeRendererSubmit && unsubscribeRendererSubmit();
     Formio.createForm(previewContainer, schema, formRendererOptions).then(rendererInstance => {
         formioRenderer = rendererInstance;
+        formioRenderer.nosubmit = true;
         subscribeRendererSubmit();
     })
 }
@@ -141,39 +138,45 @@ function subscribeRendererSubmit() {
     }
 }
 function formioSubmissionHandler(submission) {
-    // formioRenderer && formioRenderer.emit('submitDone', submission);
-    domeSubmit(submission);
+    formioRenderer && formioRenderer.emit('submitDone', submission);
+    showSubmission(submission);
 }
 
 function subscribeBuilderRender() {
-    formioBuilder && formioBuilder.on('render', builderRenderedHandler);
+    formioBuilder && formioBuilder.on('render', onRenderHandler);
     unsubscribeBuilderRender = function () {
-        formioBuilder && formioBuilder.removeEventListener('render', builderRenderedHandler);
+        formioBuilder && formioBuilder.removeEventListener('render', onRenderHandler);
         unsubscribeBuilderRender = null;
     }
 }
 
-function builderRenderedHandler() {
+function onRenderHandler() {
     if (formioBuilder) {
         const schema = formioBuilder.schema;
         updateForm(schema);
         formioRenderer && formioRenderer.setForm(schema);
+        hideSubmission();
+        formioRenderer && formioRenderer.reset();
     }
 }
 
-function domeSubmit(submission) {
+function showSubmission(submission) {
     $(viewDataTabElement).tab('show');
+    const jsonViewer = new JSONViewer()
+    clearNode(submissionContainer)
+    submissionContainer.append(jsonViewer.getContainer())
     jsonViewer.showJSON(submission && submission.data);
-    appendJsonViewer();
 }
 
-function appendNoDataSubmittedMessage() {
-    viewDataContainerElement.innerHTML = NO_DATA_SUBMITTED;
+function clearNode(node) {
+    node.innerHTML = '';
 }
 
-function appendJsonViewer() {
-    viewDataContainerElement.innerHTML = "";
-    viewDataContainerElement.append(jsonViewerContainer);
+function hideSubmission() {
+    clearNode(submissionContainer);
+    const p = document.createElement('p');
+    p.textContent = NO_DATA_SUBMITTED;
+    submissionContainer.append(p);
 }
 
 function resetFormDetails() {
