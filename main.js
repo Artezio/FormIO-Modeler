@@ -6,6 +6,7 @@ const ElectronDialog = require('./dialog');
 const fs = require('fs');
 const FormProvider = require('./formProvider');
 const fileNameFromPath = require('./util/fileNameFromPath');
+const uuid = require('uuid/v1');
 
 const formProvider = new FormProvider();
 
@@ -46,10 +47,12 @@ function formWasChangedHandler(event, form) {
 function setForm(newForm) {
     if (!newForm) {
         form = {
-            type: 'form'
+            type: 'form',
+            _id: uuid()
         }
     }
     form = {
+        _id: form._id ? form._id : uuid(),
         ...newForm,
         type: 'form'
     };
@@ -331,7 +334,6 @@ function openForm(event, arg) {
 }
 
 function createNewForm() {
-    console.log(123)
     mainWindow.webContents.send('createNewForm');
     setForm();
     setUnsaved();
@@ -346,17 +348,26 @@ function openNewWorkspaceHandler() {
     selectNewWorkspace();
 }
 
+function getSubFormByIdStartHandler(event, id) {
+    formProvider.getForms().then(forms => {
+        const form = forms.find(form => form._id === id);
+        mainWindow.webContents.send('getSubFormById.end', form);
+    })
+}
+
 function subscribeOnEvents() {
     ipcMain.on('getSubForms.start', getSubFormsStartHandler);
     ipcMain.on('formWasChanged', formWasChangedHandler);
     ipcMain.on('setWorkspace', setWorkspaceHandler);
     ipcMain.on('openNewWorkspace', openNewWorkspaceHandler);
+    ipcMain.on('getSubFormById.start', getSubFormByIdStartHandler);
 
     return function () {
         ipcMain.removeListener('getSubForms.start', getSubFormsStartHandler);
         ipcMain.removeListener('formWasChanged', formWasChangedHandler);
         ipcMain.removeListener('setWorkspace', setWorkspaceHandler);
         ipcMain.removeListener('openNewWorkspace', openNewWorkspaceHandler);
+        ipcMain.removeListener('getSubFormById.start', getSubFormByIdStartHandler);
     }
 }
 

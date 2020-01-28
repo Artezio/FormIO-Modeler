@@ -47,12 +47,24 @@ function getFormDetails() {
 }
 
 function overrideFormioRequest() {
-    const baseUrl = 'http://localhost';
-    const regExp = new RegExp('^' + baseUrl);
+    const baseUrl = 'http://localhost:3000/bla';
+    const regExp = new RegExp('^' + baseUrl + '/form');
+    const regExp2 = new RegExp('^' + baseUrl + '/form/(.*)[/\?$]');
     function _overrideFormioRequest(fn) {
         return async function (...args) {
             const _baseUrl = args[2];
-            if (typeof _baseUrl === 'string' && regExp.test(_baseUrl)) {
+            if (regExp2.test(_baseUrl)) {
+                const id = _baseUrl.match(regExp2)[1];
+                const promise = new Promise((res, rej) => {
+                    ipcRenderer.send('getSubFormById.start', id);
+                    ipcRenderer.once('getSubFormById.end', (event, subForm) => {
+                        res(subForm);
+                    });
+                })
+                const form = await promise;
+                return form;
+            }
+            if (regExp.test(_baseUrl)) {
                 const promise = new Promise((res, rej) => {
                     ipcRenderer.send('getSubForms.start');
                     ipcRenderer.once('getSubForms.end', (event, subForms) => {
@@ -71,7 +83,7 @@ function overrideFormioRequest() {
 }
 
 function emitFormChanged() {
-    const form = { ...getFormDetails(), ...(formBuilder && formBuilder.schema) };
+    const form = { ...(formBuilder && formBuilder.schema), ...getFormDetails() };
     ipcRenderer.send('formWasChanged', form);
 }
 
