@@ -1,15 +1,12 @@
 {
-  "name": "formio-electron",
-  "version": "1.0.0",
+  "name": "FormIO-editor",
+  "version": "0.1.0",
   "main": "main.js",
   "license": "MIT",
   "dependencies": {
     "bootstrap": "^4.4.1",
-    "electron-json-storage": "^4.1.8",
     "formiojs": "4.7.x",
     "jquery": "^3.4.1",
-    "jquery.json-viewer": "^1.4.0",
-    "notifyjs": "^3.0.0",
     "popper.js": "^1.16.0",
     "uuid": "^3.3.3"
   },
@@ -19,7 +16,7 @@
   },
   "scripts": {
     "start": "electron main.js",
-    "dist": "electron-builder"
+    "build": "electron-builder"
   },
   "build": {
     "appId": "formio.builder.id",

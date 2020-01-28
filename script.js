@@ -48,7 +48,7 @@ function getFormDetails() {
 }
 
 function overrideFormioRequest() {
-    const baseUrl = 'http://localhost:3000/bla';
+    const baseUrl = 'http://localhost';
     const regExp = new RegExp('^' + baseUrl + '/form');
     const regExp2 = new RegExp('^' + baseUrl + '/form/(.*)[/\?$]');
     function _overrideFormioRequest(fn) {
