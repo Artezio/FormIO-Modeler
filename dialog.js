@@ -77,10 +77,10 @@ class ElectronDialog {
         })
     }
 
-    selectDirectory(title) {
+    selectDirectory() {
         const paths = this.dialog.showOpenDialogSync(this.window, {
             properties: ['openDirectory'],
-            title
+            title: 'Select workspace'
         })
         return paths && paths[0];
     }

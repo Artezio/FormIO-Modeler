@@ -23,6 +23,7 @@ const CONFIRM_CONSTANTS = {
     DANT_SAVE: 'DANT_SAVE',
     SAVE: 'SAVE'
 }
+const BASE_TITLE = 'FormBuilder';
 
 let form = {};
 let savedStatus = SAVED;
@@ -76,6 +77,13 @@ function setCurrentWorkspace(path) {
     saveRecentWorkspaces();
     setUpMenu();
     setSaved();
+    setTitle(`${BASE_TITLE} - [${path}]`);
+}
+
+function setTitle(title) {
+    if (mainWindow) {
+        mainWindow.setTitle(title);
+    }
 }
 
 function saveRecentWorkspaces() {
@@ -139,7 +147,7 @@ function startApplication() {
 }
 
 function selectNewWorkspace() {
-    const workspacePath = electronDialog.selectDirectory('Select workspace');
+    const workspacePath = electronDialog.selectDirectory();
     if (!workspacePath) {
         return;
     }
@@ -157,7 +165,7 @@ function createMainWindow() {
     mainWindow = new BrowserWindow({
         height: 800,
         width: 1200,
-        title: 'Formio',
+        title: BASE_TITLE,
         webPreferences: {
             nodeIntegration: true
         }
