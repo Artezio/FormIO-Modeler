@@ -189,8 +189,10 @@ function createMainWindow() {
 }
 
 function saveFormAndQuit() {
-    startFormSaving();
-    mainWindow.destroy();
+    const savedSuccess = startFormSaving();
+    if (savedSuccess) {
+        mainWindow.destroy();
+    }
 }
 
 function showPage(path) {
@@ -295,27 +297,27 @@ function toggleDevTools(item, focusedWindow) {
 }
 
 function startFormSaving() {
-    if (savedStatus === SAVED) return;
+    if (savedStatus === SAVED) return true;
     if (!isForm(form)) {
         form = form || {};
         if (!form.title) {
             electronDialog.alert('Enter title to save form.');
             mainWindow.webContents.send('focusTitle');
-            return;
+            return false;
         }
         if (!form.name) {
             electronDialog.alert('Enter name to save form.');
             mainWindow.webContents.send('focusName');
-            return;
+            return false;
         }
         if (!form.path) {
             electronDialog.alert('Enter path to save form.');
             mainWindow.webContents.send('focusPath');
-            return;
+            return false;
         }
-        return;
+        return false;
     }
-    saveForm(form);
+    return saveForm(form);
 }
 
 function getSubFormsStartHandler() {
@@ -325,6 +327,25 @@ function getSubFormsStartHandler() {
 }
 
 function openForm(event, arg) {
+    if (savedStatus !== SAVED) {
+        const answer = electronDialog.confirmOpenNewFormWithout();
+        switch (answer) {
+            case CONFIRM_CONSTANTS.CANCEL: {
+                return;
+            }
+            case CONFIRM_CONSTANTS.SAVE: {
+                const saved = startFormSaving();
+                if (!saved) return;
+                break;
+            }
+            case CONFIRM_CONSTANTS.DONT_SAVE: {
+                break;
+            }
+            default: {
+                return;
+            }
+        }
+    }
     const formPath = electronDialog.selectJsonFile();
     if (!formPath) return;
     formProvider.getForm(formPath).then(form => {
@@ -339,6 +360,25 @@ function openForm(event, arg) {
 }
 
 function createNewForm() {
+    if (savedStatus !== SAVED) {
+        const answer = electronDialog.confirmOpenNewFormWithout();
+        switch (answer) {
+            case CONFIRM_CONSTANTS.CANCEL: {
+                return;
+            }
+            case CONFIRM_CONSTANTS.SAVE: {
+                const saved = startFormSaving();
+                if (!saved) return;
+                break;
+            }
+            case CONFIRM_CONSTANTS.DONT_SAVE: {
+                break;
+            }
+            default: {
+                return;
+            }
+        }
+    }
     mainWindow.webContents.send('createNewForm');
     setForm();
     setUnsaved();
@@ -381,12 +421,14 @@ function saveForm(form) {
     const fileAlreadyExist = formProvider.exists(form.path);
     if (fileAlreadyExist) {
         const canSave = electronDialog.confirmReplaceFile(fileName);
-        if (canSave !== CONFIRM_CONSTANTS.YES) return;
+        if (canSave !== CONFIRM_CONSTANTS.YES) return false;
     }
     if (formProvider.saveForm(form)) {
         mainWindow.webContents.send('formWasSaved');
         setSaved();
+        return true;
     }
+    return false;
 }
 
 prepareApp();
