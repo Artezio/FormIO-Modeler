@@ -11,6 +11,7 @@ const NO_DATA_SUBMITTED = 'No data submitted';
 const formDetailsElement = document.forms.formDetails;
 const pathElement = document.getElementById('formPath');
 const titleElement = document.getElementById('formTitle');
+const nameElement = document.getElementById('formName');
 const mainContentWrapper = document.getElementById('mainContentWrapper');
 const submissionContainer = document.getElementById('viewData');
 const viewDataTabLink = document.getElementById('view-data-tab');
@@ -163,12 +164,17 @@ function focusTitleHandler() {
     titleElement && titleElement.focus();
 }
 
+function focusNameHandler() {
+    nameElement && nameElement.focus();
+}
+
 function prepareHandlers() {
     ipcRenderer.on('formWasSaved', formWasSavedHandler);
     ipcRenderer.on('createNewForm', createNewFormHandler);
     ipcRenderer.on('openForm', openFormHandler);
     ipcRenderer.on('focusPath', focusPathHandler);
     ipcRenderer.on('focusTitle', focusTitleHandler);
+    ipcRenderer.on('focusName', focusNameHandler);
 
     return function () {
         ipcRenderer.removeListener('formWasSaved', formWasSavedHandler);
@@ -176,6 +182,7 @@ function prepareHandlers() {
         ipcRenderer.removeListener('openForm', openFormHandler);
         ipcRenderer.removeListener('focusPath', focusPathHandler);
         ipcRenderer.removeListener('focusTitle', focusTitleHandler);
+        ipcRenderer.removeListener('focusName', focusNameHandler);
     }
 }
 

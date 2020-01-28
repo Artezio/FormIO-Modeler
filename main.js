@@ -303,6 +303,11 @@ function startFormSaving() {
             mainWindow.webContents.send('focusTitle');
             return;
         }
+        if (!form.name) {
+            electronDialog.alert('Enter name to save form.');
+            mainWindow.webContents.send('focusName');
+            return;
+        }
         if (!form.path) {
             electronDialog.alert('Enter path to save form.');
             mainWindow.webContents.send('focusPath');
