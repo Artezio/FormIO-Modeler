@@ -16,7 +16,11 @@
   },
   "scripts": {
     "start": "electron main.js",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "build-mac": "electron-builder --mac",
+    "build-linux": "electron-builder --linux",
+    "build-win32": "electron-builder --win --ia32",
+    "build-win64": "electron-builder --win --x64"
   },
   "build": {
     "appId": "formio.builder.id",
@@ -24,6 +28,15 @@
     "win": {
       "target": "nsis",
       "icon": "data/icons/win/icon.ico"
+    },
+    "mac": {
+      "target": "default",
+      "category": "public.app-category.developer-tools",
+      "icon": "data/icons/mac/icon.icns"
+    },
+    "linux": {  
+      "target": "AppImage",
+      "icon": "data/icons/png/icon.png"
     }
   },
   "files": [
