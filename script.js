@@ -20,6 +20,28 @@ const formContainer = document.getElementById('preview');
 
 let formBuilder;
 let form;
+let formBuilderExtension = {};
+
+function setCustomComponents(names) {
+    if (!names.length) {
+        formBuilderExtension = {};
+        return;
+    };
+    const components = names.reduce((components, name) => {
+        components[name] = true;
+        return components;
+    }, {})
+    formBuilderExtension = {
+        builder: {
+            custom: {
+                title: 'Custom Components',
+                default: false,
+                weight: 100,
+                components
+            }
+        }
+    }
+}
 
 function run() {
     overrideFormioRequest();
@@ -88,28 +110,16 @@ function emitFormChanged() {
     ipcRenderer.send('formWasChanged', form);
 }
 
+function detachFormio() {
+    builderContainer.innerHTML = "";
+    formContainer.innerHTML = "";
+    formBuilder && formBuilder.off('render');
+    form && form.off('submit');
+}
+
 function attachFormio(schema = {}) {
-    Formio.builder(builderContainer, schema, {
-        builder: {
-            basic: false,
-            advanced: false,
-            data: false,
-            layout: false,
-            customBasic: {
-                title: 'Basic Components',
-                default: true,
-                weight: 0,
-                components: {
-                    checkmatrix: true,
-                    container: true,
-                    email: true,
-                    datagrid: true
-                }
-            }
-        }
-    }).then(builderInstance => {
+    Formio.builder(builderContainer, schema, formBuilderExtension).then(builderInstance => {
         formBuilder = builderInstance;
-        formBuilder.off('render');
         formBuilder.on('render', schemaChangedHandler);
     })
     Formio.createForm(formContainer, schema, {
@@ -117,7 +127,6 @@ function attachFormio(schema = {}) {
     }).then(rendererInstance => {
         form = rendererInstance;
         form.nosubmit = true;
-        form.off('submit');
         form.on('submit', onSubmitHandler);
     })
 }
@@ -161,27 +170,30 @@ function formWasSavedHandler() {
 function createNewFormHandler() {
     showMainContent();
     formDetailsElement.reset();
+    detachFormio();
     attachFormio();
 }
 
 function openFormHandler(event, form) {
     showMainContent();
     setFormDetails(form);
+    detachFormio();
     attachFormio(form);
 }
 
-function registerCustomComponentsHandler(event, customComponents) {
-    debugger;
-    if (!Array.isArray(customComponents)) return;
-    customComponents.forEach(({ name, path }) => {
+function registerCustomComponentsHandler(event, customComponentsDetails) {
+    if (!Array.isArray(customComponentsDetails)) return;
+    const names = [];
+    customComponentsDetails.forEach(({ name, path }) => {
         try {
             const customComponent = require(path).CheckMatrix;
-            Formio.registerComponent('checkmatrix', customComponent);
+            Formio.registerComponent(name, customComponent);
+            names.push(name);
         } catch (err) {
             console.error(err);
         }
     })
-    // attachFormio(form);
+    setCustomComponents(names);
 }
 
 function showMainContent() {

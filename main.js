@@ -85,7 +85,6 @@ function setCurrentWorkspace(path) {
 
 function registerCustomComponents() {
     customComponentsProvider.getCustomComponentsInfo().then(customComponentsInfo => {
-        console.log('log', customComponentsInfo);
         mainWindow.webContents.send('registerCustomComponents', customComponentsInfo);
     })
 }
