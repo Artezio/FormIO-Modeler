@@ -3,6 +3,7 @@ const { Formio } = require('formiojs');
 const $ = require('jquery');
 const JSONViewer = require('./json-viewer');
 const initJQueryNotify = require('./notify');
+// const debounce = require('debounce');
 
 require('bootstrap');
 initJQueryNotify();
@@ -112,9 +113,9 @@ function emitFormChanged() {
 
 function detachFormio() {
     builderContainer.innerHTML = "";
-    formContainer.innerHTML = "";
     formBuilder && formBuilder.off('render');
-    form && form.off('submit');
+    formBuilder = null;
+    detachForm();
 }
 
 function attachFormio(schema = {}) {
@@ -122,6 +123,10 @@ function attachFormio(schema = {}) {
         formBuilder = builderInstance;
         formBuilder.on('render', schemaChangedHandler);
     })
+    attachForm(schema);
+}
+
+function attachForm(schema = {}) {
     Formio.createForm(formContainer, schema, {
         noAlerts: true
     }).then(rendererInstance => {
@@ -131,6 +136,12 @@ function attachFormio(schema = {}) {
     })
 }
 
+function detachForm() {
+    formContainer.innerHTML = "";
+    form && form.off('submit');
+    form = null;
+}
+
 function onSubmitHandler(submission) {
     form && form.emit('submitDone', submission);
     showSubmission(submission);
@@ -138,9 +149,9 @@ function onSubmitHandler(submission) {
 
 function schemaChangedHandler() {
     const schema = formBuilder.schema;
-    form && form.setForm(schema);
     hideSubmission();
-    form && form.resetValue();
+    detachForm();
+    attachForm(schema);
     emitFormChanged();
 }
 
