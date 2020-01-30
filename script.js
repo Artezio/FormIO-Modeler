@@ -89,7 +89,25 @@ function emitFormChanged() {
 }
 
 function attachFormio(schema = {}) {
-    Formio.builder(builderContainer, schema).then(builderInstance => {
+    Formio.builder(builderContainer, schema, {
+        builder: {
+            basic: false,
+            advanced: false,
+            data: false,
+            layout: false,
+            customBasic: {
+                title: 'Basic Components',
+                default: true,
+                weight: 0,
+                components: {
+                    checkmatrix: true,
+                    container: true,
+                    email: true,
+                    datagrid: true
+                }
+            }
+        }
+    }).then(builderInstance => {
         formBuilder = builderInstance;
         formBuilder.off('render');
         formBuilder.on('render', schemaChangedHandler);
@@ -152,6 +170,20 @@ function openFormHandler(event, form) {
     attachFormio(form);
 }
 
+function registerCustomComponentsHandler(event, customComponents) {
+    debugger;
+    if (!Array.isArray(customComponents)) return;
+    customComponents.forEach(({ name, path }) => {
+        try {
+            const customComponent = require(path).CheckMatrix;
+            Formio.registerComponent('checkmatrix', customComponent);
+        } catch (err) {
+            console.error(err);
+        }
+    })
+    // attachFormio(form);
+}
+
 function showMainContent() {
     mainContentWrapper.style.display = "";
 }
@@ -175,6 +207,7 @@ function prepareHandlers() {
     ipcRenderer.on('focusPath', focusPathHandler);
     ipcRenderer.on('focusTitle', focusTitleHandler);
     ipcRenderer.on('focusName', focusNameHandler);
+    ipcRenderer.on('registerCustomComponents', registerCustomComponentsHandler);
 
     return function () {
         ipcRenderer.removeListener('formWasSaved', formWasSavedHandler);
@@ -183,6 +216,7 @@ function prepareHandlers() {
         ipcRenderer.removeListener('focusPath', focusPathHandler);
         ipcRenderer.removeListener('focusTitle', focusTitleHandler);
         ipcRenderer.removeListener('focusName', focusNameHandler);
+        ipcRenderer.removeListener('registerCustomComponents', registerCustomComponentsHandler);
     }
 }
 

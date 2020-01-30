@@ -7,8 +7,10 @@ const fs = require('fs');
 const FormProvider = require('./formProvider');
 const fileNameFromPath = require('./util/fileNameFromPath');
 const uuid = require('uuid/v1');
+const CustomComponentsProvider = require('./customComponentsProvider');
 
 const formProvider = new FormProvider();
+const customComponentsProvider = new CustomComponentsProvider();
 
 const PATH_TO_WORKSPACES_INFO = path.resolve(app.getAppPath(), '../recentWorkspaces.txt');
 const PATH_TO_MAIN_PAGE = path.resolve(app.getAppPath(), './mainPage.html');
@@ -74,13 +76,21 @@ function setCurrentWorkspace(path) {
     currentWorkspacePath = path;
     addRecentWorkspacePath(path);
     formProvider.setWorkspacePath(path);
+    customComponentsProvider.setWorkspace(path);
     saveRecentWorkspaces();
     setUpMenu();
     setSaved();
-    setTitle(`${BASE_TITLE} - [${path}]`);
+    setAppTitle(`${BASE_TITLE} - [${path}]`);
 }
 
-function setTitle(title) {
+function registerCustomComponents() {
+    customComponentsProvider.getCustomComponentsInfo().then(customComponentsInfo => {
+        console.log('log', customComponentsInfo);
+        mainWindow.webContents.send('registerCustomComponents', customComponentsInfo);
+    })
+}
+
+function setAppTitle(title) {
     if (mainWindow) {
         mainWindow.setTitle(title);
     }
@@ -215,7 +225,9 @@ function showStartPage() {
     return showPage(PATH_TO_START_PAGE);
 }
 function showMainPage() {
-    return showPage(PATH_TO_MAIN_PAGE);
+    return showPage(PATH_TO_MAIN_PAGE).then(() => {
+        registerCustomComponents();
+    });
 }
 
 const menuTemplate = [
