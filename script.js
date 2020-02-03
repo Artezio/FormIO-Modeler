@@ -197,7 +197,7 @@ function registerCustomComponentsHandler(event, customComponentsDetails) {
     const names = [];
     customComponentsDetails.forEach(({ name, path }) => {
         try {
-            const customComponent = require(path).CheckMatrix;
+            const customComponent = require(path);
             Formio.registerComponent(name, customComponent);
             names.push(name);
         } catch (err) {
