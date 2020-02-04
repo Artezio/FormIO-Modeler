@@ -71,6 +71,17 @@ class ElectronDialog {
         }
     }
 
+    confirmReplaceCustomComponent(fileName) {
+        const answer = this.dialog.showMessageBoxSync(this.window, {
+            message: `${fileName} already exists.\nDo you want to replace it?`,
+            cancelId: 1,
+            defaultId: 1,
+            title: 'Replace Component',
+            buttons: ['Yes', 'No']
+        })
+        return answer === 0 ? CONFIRM_CONSTANTS.YES : CONFIRM_CONSTANTS.NO;
+    }
+
     alert(message) {
         this.dialog.showMessageBoxSync(this.window, {
             message
@@ -89,6 +100,16 @@ class ElectronDialog {
         const filePaths = this.dialog.showOpenDialogSync(this.window, {
             filters: [
                 { name: 'formio', extensions: ['json'] },
+            ],
+            properties: ['openFile']
+        });
+        return filePaths && filePaths[0];
+    }
+
+    selectJsFile() {
+        const filePaths = this.dialog.showOpenDialogSync(this.window, {
+            filters: [
+                { name: 'custom component', extensions: ['js'] },
             ],
             properties: ['openFile']
         });

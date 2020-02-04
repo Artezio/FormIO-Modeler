@@ -19,7 +19,7 @@ const viewDataTabLink = document.getElementById('view-data-tab');
 const builderContainer = document.getElementById('builder');
 const formContainer = document.getElementById('preview');
 
-let formBuilder;
+let builder;
 let form;
 let formBuilderExtension = {};
 
@@ -107,21 +107,21 @@ function overrideFormioRequest() {
 }
 
 function emitFormChanged() {
-    const form = { ...(formBuilder && formBuilder.schema), ...getFormDetails() };
+    const form = { ...(builder && builder.schema), ...getFormDetails() };
     ipcRenderer.send('formWasChanged', form);
 }
 
 function detachFormio() {
     builderContainer.innerHTML = "";
-    formBuilder && formBuilder.off('render');
-    formBuilder = null;
+    builder && builder.off('render');
+    builder = null;
     detachForm();
 }
 
 function attachFormio(schema = {}) {
     Formio.builder(builderContainer, schema, formBuilderExtension).then(builderInstance => {
-        formBuilder = builderInstance;
-        formBuilder.on('render', schemaChangedHandler);
+        builder = builderInstance;
+        builder.on('render', schemaChangedHandler);
     })
     attachForm(schema);
 }
@@ -148,7 +148,7 @@ function onSubmitHandler(submission) {
 }
 
 function schemaChangedHandler() {
-    const schema = formBuilder.schema;
+    const schema = builder.schema;
     hideSubmission();
     detachForm();
     attachForm(schema);
@@ -194,6 +194,12 @@ function openFormHandler(event, form) {
 
 function registerCustomComponentsHandler(event, customComponentsDetails) {
     if (!Array.isArray(customComponentsDetails)) return;
+    const needReattachFormio = Boolean(form && builder);
+    let schema;
+    if (needReattachFormio) {
+        schema = builder.schema;
+        detachFormio();
+    }
     const names = [];
     customComponentsDetails.forEach(({ name, path }) => {
         try {
@@ -205,6 +211,9 @@ function registerCustomComponentsHandler(event, customComponentsDetails) {
         }
     })
     setCustomComponents(names);
+    if (needReattachFormio) {
+        attachFormio(schema);
+    }
 }
 
 function showMainContent() {

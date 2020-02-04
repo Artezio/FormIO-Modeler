@@ -7,6 +7,7 @@ const FILE_EXTENSION = '.js';
 class CustomComponentsProvider {
     constructor(workspace) {
         this.workspace = workspace;
+        this.customComponentsInfo = [];
     }
 
     get pathToCustomComponentsFolder() {
@@ -19,8 +20,8 @@ class CustomComponentsProvider {
 
     async getCustomComponentsInfo() {
         try {
-            let files = fs.readdirSync(this.pathToCustomComponentsFolder);
-            files = files
+            const files = fs.readdirSync(this.pathToCustomComponentsFolder);
+            const componentsInfo = files
                 .filter(fileName => path.extname(fileName) === FILE_EXTENSION)
                 .map(fileName => {
                     const name = fileName.slice(0, -path.extname(fileName).length);
@@ -29,19 +30,33 @@ class CustomComponentsProvider {
                         path: path.resolve(this.pathToCustomComponentsFolder, fileName)
                     }
                 })
-            return files;
+            this.customComponentsInfo = componentsInfo;
+            return this.customComponentsInfo;
         } catch (err) {
             console.error(err);
             return [];
         }
     }
 
-    getComponent() {
-
+    componentExistsByPath(filePath) {
+        const name = path.basename(filePath).slice(0,  path.basename(filePath).length - 3);
+        return this.customComponentsInfo.findIndex(info => info.name === name) !== -1;
     }
 
-    getComponents() {
-
+    addCustomComponentByPath(filePath) {
+        const name = path.basename(filePath).slice(0, filePath.length - 3);
+        const folderExists = fs.existsSync(this.pathToCustomComponentsFolder);
+        if (!folderExists) {
+            fs.mkdirSync(this.pathToCustomComponentsFolder);
+        }
+        try {
+            const newCustomComponentInsides = fs.readFileSync(filePath, { encoding: 'utf8' });
+            fs.writeFileSync(path.resolve(this.pathToCustomComponentsFolder, name), newCustomComponentInsides, { encoding: 'utf8' });
+        } catch (err) {
+            console.error(err);
+            return false;
+        }
+        return true;
     }
 }
 

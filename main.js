@@ -28,6 +28,7 @@ const CONFIRM_CONSTANTS = {
 const BASE_TITLE = 'FormBuilder';
 
 let form = {};
+let customComponentsInformation = [];
 let savedStatus = SAVED;
 const recentWorkspacePaths = [];
 let currentWorkspacePath;
@@ -85,6 +86,7 @@ function setCurrentWorkspace(path) {
 
 function registerCustomComponents() {
     customComponentsProvider.getCustomComponentsInfo().then(customComponentsInfo => {
+        customComponentsInformation = customComponentsInfo;
         mainWindow.webContents.send('registerCustomComponents', customComponentsInfo);
     })
 }
@@ -255,6 +257,15 @@ const menuTemplate = [
         ]
     },
     {
+        label: 'Components',
+        submenu: [
+            {
+                label: 'Register Custom Component',
+                click: registerCustomComponent
+            }
+        ]
+    },
+    {
         label: 'Development',
         submenu: [{
             label: 'Toggle Developer Tools',
@@ -263,6 +274,19 @@ const menuTemplate = [
         }]
     }
 ]
+
+function registerCustomComponent() {
+    const filePath = electronDialog.selectJsFile();
+    if (filePath === undefined) return;
+    const componentExists = customComponentsProvider.componentExistsByPath(filePath);
+    if (componentExists) {
+        const canReplace = electronDialog.confirmReplaceCustomComponent(path.basename(filePath));
+        if (!canReplace) return;
+    }
+    const componentAdded = customComponentsProvider.addCustomComponentByPath(filePath);
+    if (!componentAdded) return;
+    registerCustomComponents();
+}
 
 function reselectWorkspace() {
     if (savedStatus !== SAVED) {
@@ -304,6 +328,7 @@ function setUpMenu() {
     for (let i = 0; i < 3; i++) {
         menuTemplate[0].submenu[i].enabled = Boolean(currentWorkspacePath);
     }
+    menuTemplate[1].submenu[0].enabled = Boolean(currentWorkspacePath);
     ///
     const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
