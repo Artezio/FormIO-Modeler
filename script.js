@@ -3,7 +3,6 @@ const { Formio } = require('formiojs');
 const $ = require('jquery');
 const JSONViewer = require('./json-viewer');
 const initJQueryNotify = require('./notify');
-// const debounce = require('debounce');
 
 require('bootstrap');
 initJQueryNotify();

@@ -28,7 +28,6 @@ const CONFIRM_CONSTANTS = {
 const BASE_TITLE = 'FormBuilder';
 
 let form = {};
-let customComponentsInformation = [];
 let savedStatus = SAVED;
 const recentWorkspacePaths = [];
 let currentWorkspacePath;
@@ -86,7 +85,6 @@ function setCurrentWorkspace(path) {
 
 function registerCustomComponents() {
     customComponentsProvider.getCustomComponentsInfo().then(customComponentsInfo => {
-        customComponentsInformation = customComponentsInfo;
         mainWindow.webContents.send('registerCustomComponents', customComponentsInfo);
     })
 }
