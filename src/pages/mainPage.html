@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Formio</title>
+    <link rel="stylesheet" href="./data/bootstrap.min.css">
+    <link rel="stylesheet" href="./data/formio.full.min.css">
+    <link rel="stylesheet" href="./data/mainPage.css">
+    <link rel="stylesheet" href="./data/json-viewer.css">
+</head>
+
+<body>
+    <div class="container-fluid py-2">
+        <div id="mainContentWrapper" style="display: none;">
+            <ul class="nav nav-tabs" id="formio-builder-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="edit-form-tab" data-toggle="tab" href="#editForm" role="tab"
+                        aria-controls="edit-form" aria-selected="true">Edit Form</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="enter-data-tab" data-toggle="tab" href="#enterData" role="tab"
+                        aria-controls="enter-data" aria-selected="false">Enter Data</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="view-data-tab" data-toggle="tab" href="#viewData" role="tab"
+                        aria-controls="view-data" aria-selected="false">View Data</a>
+                </li>
+            </ul>
+
+            <div class="tab-content p-3" id="formio-builder-content">
+                <div class="tab-pane fade show active" id="editForm" role="tabpanel" aria-labelledby="edit-form-tab">
+                    <form id="formDetails" name="formDetails">
+                        <div class="form-group d-flex align-items-center">
+                            <label class="mr-3" for="formTitle">Title</label class="mr-3">
+                            <input class="form-control" type="text" name="title" id="formTitle"
+                                placeholder="Enter the form title" required>
+                        </div>
+                        <div class="form-group d-flex align-items-center">
+                            <label class="mr-3" for="formName">Name</label>
+                            <input class="form-control" type="text" name="name" id="formName"
+                                placeholder="Enter the form name">
+                        </div>
+                        <div class="form-group d-flex align-items-center">
+                            <label class="mr-3" for="formPath">Path</label>
+                            <input class="form-control" type="text" name="path" id="formPath"
+                                placeholder="Enter the form path" required>
+                        </div>
+                    </form>
+                    <div id="builder"></div>
+                </div>
+                <div class="tab-pane fade" id="enterData" role="tabpanel" aria-labelledby="enter-data-tab">
+                    <div id="preview"></div>
+                </div>
+                <div class="tab-pane fade" id="viewData" role="tabpanel" aria-labelledby="view-data-tab">
+                    <p>No data submitted</p>
+                </div>
+            </div>
+        </div>
+        <script src="./script.js"></script>
+    </div>
+</body>
+
+</html>
