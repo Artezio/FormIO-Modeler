@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron');
 const $ = require('jquery');
-const initJQueryNotify = require('../libs/notify');
+const initJQueryNotify = require('../../libs/notify');
 const FormioFacade = require('./formioFacade');
 const JsonViewerFacade = require('./jsonViewerFacade');
 
@@ -54,7 +54,7 @@ function getFormDetails() {
 
 function getFormById(id) {
     return new Promise((res, rej) => {
-        ipcRenderer.send('getFormById.start', id);
+        ipcRenderer.send('getFormById.start', { payload: id });
         ipcRenderer.once('getFormById.end', (event, response) => {
             if (response.error) {
                 rej(response.error);
@@ -67,7 +67,7 @@ function getFormById(id) {
 
 function getForms() {
     return new Promise((res, rej) => {
-        ipcRenderer.send('getForms.start', id);
+        ipcRenderer.send('getForms.start');
         ipcRenderer.once('getForms.end', (event, response) => {
             if (response.error) {
                 rej(response.error);
@@ -80,7 +80,7 @@ function getForms() {
 
 function sendFormUpdates(schema = {}) {
     const form = { ...schema, ...getFormDetails() };
-    ipcRenderer.send('sendFormUpdates', form);
+    ipcRenderer.send('sendFormUpdates', { payload: form });
 }
 
 function loadCustomComponentsDetails() {
@@ -103,7 +103,7 @@ function submitHandler(submission = {}) {
     $viewDataTabLink.tab('show');
 }
 
-function loadCustomComponentsDetailsEndHandler(event, response) {
+function loadCustomComponentsDetailsEndHandler(event, response = {}) {
     if (!response.error) {
         const customComponentsDetails = response.payload;
         formioFacade.registerComponents(customComponentsDetails);
@@ -111,16 +111,19 @@ function loadCustomComponentsDetailsEndHandler(event, response) {
     loadForm();
 }
 
-function loadFormEndHandler(event, response) {
+function loadFormEndHandler(event, response = {}) {
     if (!response.error) {
         const schema = response.payload;
         formioFacade.attachBuilder(schema);
     }
 }
 
-function focusDetailsFormFieldByNameHandler(event, name) {
-    const element = detailsForm.elements[name];
-    element && element.focus();
+function focusDetailsFormFieldByNameHandler(event, response = {}) {
+    if (!response.error) {
+        const name = response.payload;
+        const element = detailsForm.elements[name];
+        element && element.focus();
+    }
 }
 
 function formWasSavedHandler() {

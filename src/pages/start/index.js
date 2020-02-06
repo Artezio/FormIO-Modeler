@@ -1,5 +1,5 @@
 const { ipcRenderer } = require('electron');
-const clearNode = require('../util/clearNode');
+const clearNode = require('../../util/clearNode');
 
 const listContainer = document.getElementById('list-wrapper');
 const commandsContainer = document.getElementById('commands-wrapper');
@@ -28,7 +28,7 @@ function createList(list) {
 }
 
 function setWorkspace(path) {
-    ipcRenderer.send('setWorkspace.start', path);
+    ipcRenderer.send('setWorkspace.start', { payload: path });
 }
 
 function getRecentWorkspaces() {
@@ -36,43 +36,49 @@ function getRecentWorkspaces() {
 }
 
 function loadForm(path) {
-    ipcRenderer.send('loadForm', path);
+    ipcRenderer.send('loadForm', { payload: path });
 }
 
 function getForms() {
     ipcRenderer.send('getForms.start');
 }
 
-function getRecentWorkspacesEndHandler(event, recentWorkspaces) {
-    clearNode(listContainer, commandsContainer);
-    const workspacesList = recentWorkspaces.map(workspace => ({
-        title: workspace,
-        callback: () => setWorkspace(workspace)
-    }))
-    listContainer.append(createList(workspacesList));
-    commandsContainer.append(createList([{
-        title: 'Open new',
-        callback: () => setWorkspace()
-    }]))
+function getRecentWorkspacesEndHandler(event, response = {}) {
+    if (!response.error) {
+        const recentWorkspaces = response.payload;
+        clearNode(listContainer, commandsContainer);
+        const workspacesList = recentWorkspaces.map(workspace => ({
+            title: workspace,
+            callback: () => setWorkspace(workspace)
+        }))
+        listContainer.append(createList(workspacesList));
+        commandsContainer.append(createList([{
+            title: 'Open new',
+            callback: () => setWorkspace()
+        }]))
+    }
 }
 
 function setWorkspaceEndHandler() {
     getForms();
 }
 
-function getFormsEndHandler(event, forms) {
-    clearNode(listContainer, commandsContainer, title);
-    title.textContent = "Select form";
-    listTitle.textContent = "Forms";
-    const formsList = forms.map(form => ({
-        title: form.title,
-        callback: () => loadForm(form)
-    }))
-    listContainer.append(createList(formsList));
-    commandsContainer.append(createList([{
-        title: 'Create new',
-        callback: () => loadForm()
-    }]))
+function getFormsEndHandler(event, response = {}) {
+    if (!response.error) {
+        const forms = response.payload;
+        clearNode(listContainer, commandsContainer, title);
+        title.textContent = "Select form";
+        listTitle.textContent = "Forms";
+        const formsList = forms.map(form => ({
+            title: form.title,
+            callback: () => loadForm(form)
+        }))
+        listContainer.append(createList(formsList));
+        commandsContainer.append(createList([{
+            title: 'Create new',
+            callback: () => loadForm()
+        }]))
+    }
 }
 
 function subscribeOnMainStreamEvents() {

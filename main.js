@@ -22,7 +22,7 @@ const CONFIRM_CONSTANTS = {
     YES: 'YES',
     NO: 'NO',
     CANCEL: 'CANCEL',
-    DANT_SAVE: 'DANT_SAVE',
+    DONT_SAVE: 'DANT_SAVE',
     SAVE: 'SAVE'
 }
 const BASE_TITLE = 'FormBuilder';

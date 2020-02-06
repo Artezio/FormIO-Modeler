@@ -1,6 +1,6 @@
-const JSONViewer = require('../libs/json-viewer');
+const JSONViewer = require('../../libs/json-viewer');
 const { NO_DATA_SUBMITTED } = require('../constants');
-const clearNode = require('../util/clearNode');
+const clearNode = require('../../util/clearNode');
 
 const jsonViewer = new JSONViewer();
 

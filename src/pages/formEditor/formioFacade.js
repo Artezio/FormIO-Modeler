@@ -1,5 +1,5 @@
 const { Formio } = require('formiojs');
-const clearNode = require('../util/clearNode');
+const clearNode = require('../../util/clearNode');
 
 class FormioFacade {
     constructor(builderContainer, formContainer, options = {}) {
