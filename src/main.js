@@ -1,13 +1,13 @@
 const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const path = require('path');
 const { format } = require('url');
-const Dialog = require('./dialog');
+const ElectronDialog = require('./dialog');
 const Backend = require('./backend');
 const ClientChanel = require('./clientChanel');
 const { BASE_TITLE, PATH_TO_START_PAGE, PATH_TO_FORM_EDITOR_PAGE } = require('./constants/backendConstants');
 
 let clientChanel;
-let dialog;
+let electronDialog;
 let backend;
 let mainWindow;
 let unsubscribe;
@@ -28,11 +28,11 @@ function prepareApp() {
 }
 
 function run() {
-    unsubscribe = subscribe();
     createMainWindow();
-    dialog = new Dialog(mainWindow);
+    electronDialog = new ElectronDialog(mainWindow);
     clientChanel = new ClientChanel(mainWindow);
-    backend = new Backend(dialog, clientChanel);
+    backend = new Backend(electronDialog, clientChanel);
+    unsubscribe = subscribe();
     showStartPage();
     initMenu();
 }
@@ -40,7 +40,7 @@ function run() {
 function destroy() {
     unsubscribe();
     mainWindow = null;
-    dialog = null;
+    electronDialog = null;
     clientChanel = null;
     backend = null;
 }
@@ -54,8 +54,9 @@ function createMainWindow() {
             nodeIntegration: true
         }
     }).on('close', e => {
-        const canClose = backend.closeCurrentForm();
-        if (!canClose) {
+        try {
+            backend.closeCurrentForm();
+        } catch (err) {
             e.preventDefault();
         }
     })

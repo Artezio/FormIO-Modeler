@@ -1,4 +1,4 @@
-const { CONFIRM_CONSTANTS } = require('./constants');
+const { CONFIRM_CONSTANTS } = require('./constants/backendConstants');
 
 class ElectronDialog {
     constructor(dialog, window) {

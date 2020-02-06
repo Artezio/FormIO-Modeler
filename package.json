@@ -15,7 +15,7 @@
     "electron-builder": "^22.2.0"
   },
   "scripts": {
-    "start": "electron main.js",
+    "start": "electron src/main.js",
     "build": "electron-builder",
     "build-mac": "electron-builder --mac",
     "build-linux": "electron-builder --linux",
