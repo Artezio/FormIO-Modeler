@@ -58,7 +58,37 @@ class Backend {
     }
 
     changeCurrentWorkspace() {
-
+        if (this.appState.formSaved) {
+            const workspace = this.dialog.selectDirectory();
+            if (!workspace) {
+                this.throwError('Directory not selected');
+            }
+            this.appState.setCurrentWorkspace(workspace);
+        } else {
+            const answer = this.dialog.confirmChangeWorkspace();
+            switch (answer) {
+                case CONFIRM_CONSTANTS.CANCEL: {
+                    this.throwError('Action canceled');
+                    break;
+                }
+                case CONFIRM_CONSTANTS.NOT_SAVE: {
+                    const workspace = this.dialog.selectDirectory();
+                    if (!workspace) {
+                        this.throwError('Directory not selected');
+                    }
+                    this.appState.setCurrentWorkspace(workspace);
+                    break;
+                }
+                case CONFIRM_CONSTANTS.SAVE: {
+                    this.closeCurrentForm();
+                    break;
+                }
+                default: {
+                    this.throwError('Action canceled');
+                    break;
+                }
+            }
+        }
     }
 
     saveCurrentForm() {

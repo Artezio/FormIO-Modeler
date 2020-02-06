@@ -29,12 +29,12 @@ function prepareApp() {
 
 function run() {
     createMainWindow();
-    electronDialog = new ElectronDialog(mainWindow);
+    electronDialog = new ElectronDialog(dialog, mainWindow);
     clientChanel = new ClientChanel(mainWindow);
     backend = new Backend(electronDialog, clientChanel);
     unsubscribe = subscribe();
     showStartPage();
-    initMenu();
+    setMenu();
 }
 
 function destroy() {
@@ -78,7 +78,87 @@ function showFormEditorPage() {
     return showPage(PATH_TO_FORM_EDITOR_PAGE);
 }
 
-function initMenu() {
+function setMenu() {
+    const menuTemplate = getMenuTemplate();
+    if (process.platform === 'darwin') {
+        menuTemplate.unshift({});
+    }
+    const menu = Menu.buildFromTemplate(menuTemplate);
+    Menu.setApplicationMenu(menu);
+}
+
+function getMenuTemplate() {
+    return [
+        {
+            label: 'File',
+            submenu: [
+                {
+                    label: 'Create new',
+                    accelerator: 'CmdOrCtrl+N',
+                    click: openNewFormHandler
+                },
+                {
+                    label: 'Open',
+                    accelerator: 'CmdOrCtrl+O',
+                    click: openFormHandler
+                },
+                {
+                    label: 'Save',
+                    accelerator: 'CmdOrCtrl+S',
+                    click: saveCurrentFormHandler
+                },
+                {
+                    label: 'Change workspace',
+                    click: changeCurrentWorkspaceHandler
+                }
+            ]
+        },
+        {
+            label: 'Components',
+            submenu: [
+                {
+                    label: 'Register Custom Component',
+                    click: registerCustomComponentHandler
+                }
+            ]
+        },
+        {
+            label: 'Development',
+            submenu: [{
+                label: 'Toggle Developer Tools',
+                accelerator: 'F12',
+                click: toggleDevTools
+            }]
+        }
+    ]
+}
+
+function toggleDevTools() {
+
+}
+
+function registerCustomComponentHandler() {
+
+}
+
+function changeCurrentWorkspaceHandler() {
+    try {
+        backend.changeCurrentWorkspace();
+        showStartPage();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function saveCurrentFormHandler() {
+
+}
+
+function openFormHandler() {
+
+}
+
+function openNewFormHandler() {
 
 }
 
