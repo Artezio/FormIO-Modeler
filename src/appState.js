@@ -62,7 +62,7 @@ class AppState {
     adjustForm(changes = {}) {
         this.form = { ...this.form, ...changes };
         this.form.type = this.form.type || FORM_TYPE;
-        this.form.id = this.form.id || uuid();
+        this.form._id = this.form._id || uuid();
         this.formSaved = false;
     }
 }

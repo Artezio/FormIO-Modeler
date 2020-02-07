@@ -95,19 +95,19 @@ function getMenuTemplate() {
                     label: 'Create new',
                     accelerator: 'CmdOrCtrl+N',
                     click: openNewFormHandler,
-                    enabled: Boolean(this.backend.getCurrentWorkspace())
+                    enabled: Boolean(backend && backend.getCurrentWorkspace())
                 },
                 {
                     label: 'Open',
                     accelerator: 'CmdOrCtrl+O',
                     click: openFormHandler,
-                    enabled: Boolean(this.backend.getCurrentWorkspace())
+                    enabled: Boolean(backend && backend.getCurrentWorkspace())
                 },
                 {
                     label: 'Save',
                     accelerator: 'CmdOrCtrl+S',
                     click: saveCurrentFormHandler,
-                    enabled: Boolean(this.backend.getCurrentWorkspace())
+                    enabled: Boolean(backend && backend.getCurrentWorkspace())
                 },
                 {
                     label: 'Change workspace',
@@ -120,7 +120,8 @@ function getMenuTemplate() {
             submenu: [
                 {
                     label: 'Register Custom Component',
-                    click: registerCustomComponentHandler
+                    click: registerCustomComponentHandler,
+                    enabled: Boolean(backend && backend.getCurrentWorkspace())
                 }
             ]
         },
@@ -148,6 +149,7 @@ function registerCustomComponentHandler() {
 function changeCurrentWorkspaceHandler() {
     try {
         backend.changeCurrentWorkspace();
+        setMenu();
         showStartPage();
     } catch (err) {
         console.error(err);
@@ -194,6 +196,7 @@ function setCurrentWorkspaceHandler(event, result = {}) {
     const workspace = result.payload;
     try {
         backend.setCurrentWorkspace(workspace);
+        setMenu();
         clientChanel.send('setCurrentWorkspace');
     } catch (err) {
         clientChanel.sendError('setCurrentWorkspace', err);
@@ -255,6 +258,16 @@ function adjustFormHandler(event, result = {}) {
     }
 }
 
+function getFormByIdHandler(event, result = {}) {
+    const id = result.payload;
+    try {
+        const form = backend.getFormById(id);
+        clientChanel.send('getFormById', form);
+    } catch (err) {
+        clientChanel.sendError('getFormById', err);
+    }
+}
+
 function subscribe() {
     clientChanel.on('getRecentWorkspaces', getRecentWorkspacesHandler);
     clientChanel.on('setCurrentWorkspace', setCurrentWorkspaceHandler);
@@ -266,6 +279,7 @@ function subscribe() {
     clientChanel.on('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
     clientChanel.on('openNewForm', openNewFormHandler);
     clientChanel.on('adjustForm', adjustFormHandler);
+    clientChanel.on('getFormById', getFormByIdHandler);
 
     return function () {
         clientChanel.off('getRecentWorkspaces', getRecentWorkspacesHandler);
@@ -278,6 +292,7 @@ function subscribe() {
         clientChanel.off('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
         clientChanel.off('openNewForm', openNewFormHandler);
         clientChanel.off('adjustForm', adjustFormHandler);
+        clientChanel.off('getFormById', getFormByIdHandler);
     }
 }
 

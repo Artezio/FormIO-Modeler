@@ -44,7 +44,7 @@ class WorkspaceService {
     }
 
     formExists(fileName) {
-        return fs.existsSync(this._getPathByBaseName(fileName));
+        return fs.existsSync(this._getFormPathByName(fileName));
     }
 
     saveForm(form) {
@@ -59,27 +59,17 @@ class WorkspaceService {
         return true;
     }
 
-    async getForm(formPath) {
-        const promise = new Promise((res, rej) => {
-            fs.readFile(formPath, { encoding: 'utf8' }, (err, data) => {
-                if (err) {
-                    rej(err);
-                } else {
-                    res(data);
-                }
-            });
-        })
-        let form = await promise;
+    getForm(formPath) {
         try {
+            let form = fs.readFileSync(formPath, { encoding: 'utf8' });
             form = JSON.parse(form);
             if (!isForm(form)) {
-                throw new Error('File is not valid form');
+                this.throwError('Not valid form');
             }
+            return form;
         } catch (err) {
-            console.error(err);
-            return;
+            this.throwError(err);
         }
-        return form;
     }
 
     getForms() {

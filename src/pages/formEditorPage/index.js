@@ -3,6 +3,7 @@ const $ = require('jquery');
 const initJQueryNotify = require('../../libs/notify');
 const FormioFacade = require('./formioFacade');
 const JsonViewerFacade = require('./jsonViewerFacade');
+const { SAVED_MESSAGE } = require('../../constants/clientConstants')
 
 require('bootstrap');
 initJQueryNotify();
@@ -113,9 +114,17 @@ function getCustomComponentsDetailsEndHandler(event, response = {}) {
 
 function getCurrentFormEndHandler(event, response = {}) {
     if (!response.error) {
-        const schema = response.payload;
-        formioFacade.attachBuilder(schema);
+        const form = response.payload;
+        setFormDetails(form);
+        formioFacade.attachBuilder(form);
     }
+}
+
+function setFormDetails(form = {}) {
+    const controls = [].filter.call(detailsForm.elements, el => !!el.name);
+    controls.forEach(control => {
+        control.value = form[control.name] === undefined ? '' : form[control.name];
+    })
 }
 
 function focusDetailsFormFieldByNameHandler(event, response = {}) {
@@ -126,21 +135,23 @@ function focusDetailsFormFieldByNameHandler(event, response = {}) {
     }
 }
 
-function formWasSavedHandler() {
-    $.notify(SAVED_MESSAGE, 'success');
+function formWasSavedHandler(event, result = {}) {
+    if (!result.error) {
+        $.notify(SAVED_MESSAGE, 'success');
+    }
 }
 
 function subscribeOnEvents() {
     ipcRenderer.on('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
     ipcRenderer.on('getCurrentForm.end', getCurrentFormEndHandler);
-    ipcRenderer.on('focusDetailsFormFieldByName', focusDetailsFormFieldByNameHandler);
-    ipcRenderer.on('formWasSaved', formWasSavedHandler);
+    ipcRenderer.on('focusDetailsFormFieldByName.end', focusDetailsFormFieldByNameHandler);
+    ipcRenderer.on('saveCurrentForm.end', formWasSavedHandler);
 
     return function () {
         ipcRenderer.removeListener('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
         ipcRenderer.removeListener('getCurrentForm.end', getCurrentFormEndHandler);
-        ipcRenderer.removeListener('focusDetailsFormFieldByName', focusDetailsFormFieldByNameHandler);
-        ipcRenderer.removeListener('formWasSaved', formWasSavedHandler);
+        ipcRenderer.removeListener('focusDetailsFormFieldByName.end', focusDetailsFormFieldByNameHandler);
+        ipcRenderer.removeListener('saveCurrentForm.end', formWasSavedHandler);
     }
 }
 

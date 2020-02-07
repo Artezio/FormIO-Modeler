@@ -1,6 +1,7 @@
 const WorkspaceService = require('./workspaceService');
 const AppState = require('./appState');
 const { CONFIRM_CONSTANTS } = require('./constants/backendConstants');
+const isForm = require('./util/isForm');
 
 class Backend {
     constructor(dialog) {
@@ -166,7 +167,7 @@ class Backend {
     }
 
     saveCurrentForm() {
-        if (this.appState.formSaved) return;
+        if (this.appState.formSaved) this.throwError('Form saved');
         const form = this.appState.form;
         if (!isForm(form)) {
             this.throwError('Not valid form');
@@ -187,7 +188,7 @@ class Backend {
     }
 
     getFormById(id) {
-        const forms = this.workspaceService.getForms;
+        const forms = this.workspaceService.getForms();
         const form = forms.find(form => form._id === id);
         if (!form) {
             this.throwError(`Form with id: ${id} not found`);

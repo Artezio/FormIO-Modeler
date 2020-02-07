@@ -3,7 +3,6 @@ const clearNode = require('../../util/clearNode');
 
 class FormioFacade {
     constructor(builderContainer, formContainer, options = {}) {
-        debugger;
         this.onSchemaChanged = options.onSchemaChanged;
         this.onSubmit = options.onSubmit;
         this.builderContainer = builderContainer;
