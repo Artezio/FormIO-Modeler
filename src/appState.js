@@ -13,7 +13,7 @@ class AppState {
     addRecentWorkspace(workspace) {
         const existedPathIndex = this.recentWorkspaces.indexOf(workspace);
         if (existedPathIndex !== -1) {
-            this.splice(existedPathIndex, 1);
+            this.recentWorkspaces.splice(existedPathIndex, 1);
         }
         this.recentWorkspaces.unshift(workspace);
         if (this.recentWorkspaces.length > MAX_RECENT_WORKSPACES) {
@@ -63,6 +63,7 @@ class AppState {
         this.form = { ...this.form, ...changes };
         this.form.type = this.form.type || FORM_TYPE;
         this.form.id = this.form.id || uuid();
+        this.formSaved = false;
     }
 }
 

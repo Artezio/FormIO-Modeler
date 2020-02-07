@@ -9,8 +9,7 @@ const listTitle = document.getElementById('list-wrapper-label');
 function run() {
     const unsubscribe = subscribeOnMainStreamEvents();
     document.addEventListener('unload', unsubscribe);
-
-    getRecentWorkspaces();
+    getCurrentWorkspace();
 }
 
 function createList(list) {
@@ -27,45 +26,70 @@ function createList(list) {
     return div;
 }
 
-function setWorkspace(path) {
-    ipcRenderer.send('setWorkspace.start', { payload: path });
+function getCurrentWorkspace() {
+    ipcRenderer.send('getCurrentWorkspace.start');
+}
+
+function setCurrentWorkspace(path) {
+    ipcRenderer.send('setCurrentWorkspace.start', { payload: path });
+}
+
+function openNewWorkspace() {
+    ipcRenderer.send('changeCurrentWorkspace.start');
 }
 
 function getRecentWorkspaces() {
     ipcRenderer.send('getRecentWorkspaces.start');
 }
 
-function loadForm(path) {
-    ipcRenderer.send('loadForm', { payload: path });
+function loadForm(form) {
+    ipcRenderer.send('setCurrentForm.start', { payload: form });
 }
 
 function getForms() {
     ipcRenderer.send('getForms.start');
 }
 
-function getRecentWorkspacesEndHandler(event, response = {}) {
-    if (!response.error) {
-        const recentWorkspaces = response.payload;
+function openNewForm() {
+    ipcRenderer.send('openNewForm.start');
+}
+
+function getCurrentWorkspaceEndHandler(event, result = {}) {
+    if (!result.error) {
+        const currentWorkspace = result.payload;
+        if (currentWorkspace) {
+            getForms();
+        } else {
+            getRecentWorkspaces();
+        }
+    } else {
+        getRecentWorkspaces();
+    }
+}
+
+function getRecentWorkspacesEndHandler(event, result = {}) {
+    if (!result.error) {
+        const recentWorkspaces = result.payload;
         clearNode(listContainer, commandsContainer);
         const workspacesList = recentWorkspaces.map(workspace => ({
             title: workspace,
-            callback: () => setWorkspace(workspace)
+            callback: () => setCurrentWorkspace(workspace)
         }))
         listContainer.append(createList(workspacesList));
         commandsContainer.append(createList([{
             title: 'Open new',
-            callback: () => setWorkspace()
+            callback: () => openNewWorkspace()
         }]))
     }
 }
 
-function setWorkspaceEndHandler() {
+function setCurrentWorkspaceEndHandler() {
     getForms();
 }
 
-function getFormsEndHandler(event, response = {}) {
-    if (!response.error) {
-        const forms = response.payload;
+function getFormsEndHandler(event, result = {}) {
+    if (!result.error) {
+        const forms = result.payload;
         clearNode(listContainer, commandsContainer, title);
         title.textContent = "Select form";
         listTitle.textContent = "Forms";
@@ -76,20 +100,22 @@ function getFormsEndHandler(event, response = {}) {
         listContainer.append(createList(formsList));
         commandsContainer.append(createList([{
             title: 'Create new',
-            callback: () => loadForm()
+            callback: () => openNewForm()
         }]))
     }
 }
 
 function subscribeOnMainStreamEvents() {
     ipcRenderer.on('getRecentWorkspaces.end', getRecentWorkspacesEndHandler);
-    ipcRenderer.on('setWorkspace.end', setWorkspaceEndHandler);
+    ipcRenderer.on('setCurrentWorkspace.end', setCurrentWorkspaceEndHandler);
     ipcRenderer.on('getForms.end', getFormsEndHandler);
+    ipcRenderer.on('getCurrentWorkspace.end', getCurrentWorkspaceEndHandler);
 
     return function () {
         ipcRenderer.removeListener('getRecentWorkspaces.end', getRecentWorkspacesEndHandler);
-        ipcRenderer.removeListener('setWorkspace.end', setWorkspaceEndHandler);
+        ipcRenderer.removeListener('setCurrentWorkspace.end', setCurrentWorkspaceEndHandler);
         ipcRenderer.removeListener('getForms.end', getFormsEndHandler);
+        ipcRenderer.removeListener('getCurrentWorkspace.end', getCurrentWorkspaceEndHandler);
     }
 }
 

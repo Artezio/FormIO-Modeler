@@ -3,7 +3,8 @@ const clearNode = require('../../util/clearNode');
 
 class FormioFacade {
     constructor(builderContainer, formContainer, options = {}) {
-        this.onSchemaChange = options.onSchemaChange;
+        debugger;
+        this.onSchemaChanged = options.onSchemaChanged;
         this.onSubmit = options.onSubmit;
         this.builderContainer = builderContainer;
         this.formContainer = formContainer;
@@ -79,8 +80,10 @@ class FormioFacade {
     attachBuilder(schema, options = {}) {
         Formio.builder(this.builderContainer, schema, { ...this.builderOptions, ...options }).then(builderInstance => {
             this.builder = builderInstance;
-            if (this.onSchemaChange) {
-                this.builder.on('render', this.onSchemaChange);
+            if (this.onSchemaChanged) {
+                this.builder.on('render', () => {
+                    this.onSchemaChanged(this.builder.schema);
+                });
             }
         })
     }

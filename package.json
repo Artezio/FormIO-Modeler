@@ -1,7 +1,7 @@
 {
   "name": "FormIO-editor",
   "version": "0.2.0",
-  "main": "main.js",
+  "main": "src/main.js",
   "license": "MIT",
   "dependencies": {
     "bootstrap": "^4.4.1",

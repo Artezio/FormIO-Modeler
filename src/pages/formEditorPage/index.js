@@ -24,18 +24,18 @@ const jsonViewerFacade = new JsonViewerFacade(jsonContainer);
 
 function run() {
     const unsubscribe = subscribeOnEvents();
-    formDetailsElement.addEventListener('input', changeFormDetailsHandler);
-    formDetailsElement.onsubmit = e => e.preventDefault();
+    detailsForm.addEventListener('input', changeFormDetailsHandler);
+    detailsForm.onsubmit = e => e.preventDefault();
     document.addEventListener('unload', () => {
         unsubscribe();
         formioFacade.unsubscribe();
-        formDetailsElement.removeEventListener('input', changeFormDetailsHandler);
+        detailsForm.removeEventListener('input', changeFormDetailsHandler);
     });
     loadCustomComponentsDetails();
 }
 
 function changeFormDetailsHandler() {
-    sendFormUpdates();
+    adjustForm();
 }
 
 function getActiveFormPath() {
@@ -78,24 +78,24 @@ function getForms() {
     })
 }
 
-function sendFormUpdates(schema = {}) {
+function adjustForm(schema = {}) {
     const form = { ...schema, ...getFormDetails() };
-    ipcRenderer.send('sendFormUpdates', { payload: form });
+    ipcRenderer.send('adjustForm.start', { payload: form });
 }
 
 function loadCustomComponentsDetails() {
-    ipcRenderer.send('loadCustomComponentsInfo.start');
+    ipcRenderer.send('getCustomComponentsDetails.start');
 }
 
 function loadForm() {
-    ipcRenderer.send('loadForm.start');
+    ipcRenderer.send('getCurrentForm.start');
 }
 
 function schemaChangedHandler(schema = {}) {
     jsonViewerFacade.hide();
     formioFacade.detachForm();
     formioFacade.attachForm(schema, { noAlerts: true });
-    sendFormUpdates(schema);
+    adjustForm(schema);
 }
 
 function submitHandler(submission = {}) {
@@ -103,7 +103,7 @@ function submitHandler(submission = {}) {
     $viewDataTabLink.tab('show');
 }
 
-function loadCustomComponentsDetailsEndHandler(event, response = {}) {
+function getCustomComponentsDetailsEndHandler(event, response = {}) {
     if (!response.error) {
         const customComponentsDetails = response.payload;
         formioFacade.registerComponents(customComponentsDetails);
@@ -111,7 +111,7 @@ function loadCustomComponentsDetailsEndHandler(event, response = {}) {
     loadForm();
 }
 
-function loadFormEndHandler(event, response = {}) {
+function getCurrentFormEndHandler(event, response = {}) {
     if (!response.error) {
         const schema = response.payload;
         formioFacade.attachBuilder(schema);
@@ -131,14 +131,14 @@ function formWasSavedHandler() {
 }
 
 function subscribeOnEvents() {
-    ipcRenderer.on('loadCustomComponents.end', loadCustomComponentsDetailsEndHandler);
-    ipcRenderer.on('loadForm.end', loadFormEndHandler);
+    ipcRenderer.on('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
+    ipcRenderer.on('getCurrentForm.end', getCurrentFormEndHandler);
     ipcRenderer.on('focusDetailsFormFieldByName', focusDetailsFormFieldByNameHandler);
     ipcRenderer.on('formWasSaved', formWasSavedHandler);
 
     return function () {
-        ipcRenderer.removeListener('loadCustomComponents.end', loadCustomComponentsDetailsEndHandler);
-        ipcRenderer.removeListener('loadForm.end', loadFormEndHandler);
+        ipcRenderer.removeListener('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
+        ipcRenderer.removeListener('getCurrentForm.end', getCurrentFormEndHandler);
         ipcRenderer.removeListener('focusDetailsFormFieldByName', focusDetailsFormFieldByNameHandler);
         ipcRenderer.removeListener('formWasSaved', formWasSavedHandler);
     }

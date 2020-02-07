@@ -3,9 +3,8 @@ const AppState = require('./appState');
 const { CONFIRM_CONSTANTS } = require('./constants/backendConstants');
 
 class Backend {
-    constructor(dialog, clientChanel) {
+    constructor(dialog) {
         this.dialog = dialog;
-        this.clientChanel = clientChanel;
         this.workspaceService = new WorkspaceService();
         this.appState = new AppState();
     }
@@ -14,26 +13,101 @@ class Backend {
         throw new Error(message);
     }
 
-    closeCurrentForm() {
-        if (this.formSaved) return;
-        this.saveCurrentForm()
-    }
-
-    setCurrentForm() {
-
+    setCurrentForm(form) {
+        if (this.appState.formSaved) {
+            this.appState.setForm(form);
+        } else {
+            const answer = this.dialog.confirmOpenNewForm();
+            switch (answer) {
+                case CONFIRM_CONSTANTS.CANCEL: {
+                    this.throwError('Action canceled');
+                    break;
+                }
+                case CONFIRM_CONSTANTS.NOT_SAVE: {
+                    this.appState.setForm(form);
+                    break;
+                }
+                case CONFIRM_CONSTANTS.SAVE: {
+                    this.saveCurrentForm();
+                    break;
+                }
+                default: {
+                    this.throwError('Action canceled');
+                    break;
+                }
+            }
+        }
     }
 
     openForm() {
-
+        if (this.appState.formSaved) {
+            const formPath = this.dialog.selectJsonFile();
+            if (!formPath) {
+                this.throwError('Action canceled');
+            }
+            const form = this.workspaceService.getForm(formPath);
+            this.appState.setForm(form);
+        } else {
+            const answer = this.dialog.confirmOpenNewForm();
+            switch (answer) {
+                case CONFIRM_CONSTANTS.CANCEL: {
+                    this.throwError('Action canceled');
+                    break;
+                }
+                case CONFIRM_CONSTANTS.NOT_SAVE: {
+                    const formPath = this.dialog.selectJsonFile();
+                    if (!formPath) {
+                        this.throwError('Action canceled');
+                    }
+                    const form = this.workspaceService.getForm(formPath);
+                    this.appState.setForm(form);
+                    break;
+                }
+                case CONFIRM_CONSTANTS.SAVE: {
+                    this.saveCurrentForm();
+                    break;
+                }
+                default: {
+                    this.throwError('Action canceled');
+                    break;
+                }
+            }
+        }
     }
 
     openNewForm() {
+        if (this.appState.formSaved) {
+            this.appState.setForm({});
+        } else {
+            const answer = this.dialog.confirmOpenNewForm();
+            switch (answer) {
+                case CONFIRM_CONSTANTS.CANCEL: {
+                    this.throwError('Action canceled');
+                    break;
+                }
+                case CONFIRM_CONSTANTS.NOT_SAVE: {
+                    this.appState.setForm({});
+                    break;
+                }
+                case CONFIRM_CONSTANTS.SAVE: {
+                    this.saveCurrentForm();
+                    break;
+                }
+                default: {
+                    this.throwError('Action canceled');
+                    break;
+                }
+            }
+        }
+    }
 
+    getCurrentForm() {
+        return this.appState.form;
     }
 
     setCurrentWorkspace(workspace) {
         if (this.appState.formSaved) {
-            this.appState.setCurrentWorkspace(workspace);
+            this.workspaceService.setCurrentWorkspace(workspace);
         } else {
             const answer = this.dialog.confirmChangeWorkspace();
             switch (answer) {
@@ -42,11 +116,11 @@ class Backend {
                     break;
                 }
                 case CONFIRM_CONSTANTS.NOT_SAVE: {
-                    this.appState.setCurrentWorkspace(workspace);
+                    this.workspaceService.setCurrentWorkspace(workspace);
                     break;
                 }
                 case CONFIRM_CONSTANTS.SAVE: {
-                    this.closeCurrentForm();
+                    this.saveCurrentForm();
                     break;
                 }
                 default: {
@@ -63,7 +137,7 @@ class Backend {
             if (!workspace) {
                 this.throwError('Directory not selected');
             }
-            this.appState.setCurrentWorkspace(workspace);
+            this.workspaceService.setCurrentWorkspace(workspace);
         } else {
             const answer = this.dialog.confirmChangeWorkspace();
             switch (answer) {
@@ -76,11 +150,11 @@ class Backend {
                     if (!workspace) {
                         this.throwError('Directory not selected');
                     }
-                    this.appState.setCurrentWorkspace(workspace);
+                    this.workspaceService.setCurrentWorkspace(workspace);
                     break;
                 }
                 case CONFIRM_CONSTANTS.SAVE: {
-                    this.closeCurrentForm();
+                    this.saveCurrentForm();
                     break;
                 }
                 default: {
@@ -92,31 +166,53 @@ class Backend {
     }
 
     saveCurrentForm() {
-
+        if (this.appState.formSaved) return;
+        const form = this.appState.form;
+        if (!isForm(form)) {
+            this.throwError('Not valid form');
+        }
+        const formExists = this.workspaceService.formExists(form.path);
+        if (formExists) {
+            const canReplace = this.dialog.confirmReplaceFile();
+            if (canReplace) {
+                this.workspaceService.saveForm(form);
+                this.appState.formSaved = true;
+            } else {
+                this.throwError('Action canceled');
+            }
+        } else {
+            this.workspaceService.saveForm(form);
+            this.appState.formSaved = true;
+        }
     }
 
-    getFormById() {
-
+    getFormById(id) {
+        const forms = this.workspaceService.getForms;
+        const form = forms.find(form => form._id === id);
+        if (!form) {
+            this.throwError(`Form with id: ${id} not found`);
+        }
+        return form;
     }
 
     getForms() {
-
+        return this.workspaceService.getForms();
     }
 
-    adjustForm() {
-
+    adjustForm(formUpdates) {
+        this.appState.adjustForm(formUpdates);
     }
 
     getCustomComponentsDetails() {
-
-    }
-
-    setCurrentWorkspace() {
-
+        return this.workspaceService.getCustomComponentsDetails();
     }
 
     getRecentWorkspaces() {
         return this.appState.recentWorkspaces;
+    }
+
+    getCurrentWorkspace() {
+        return this.workspaceService.currentWorkspace;
     }
 }
 
