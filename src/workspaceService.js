@@ -4,8 +4,8 @@ const { CUSTOM_COMPONENTS_FOLDER_NAME } = require('./constants/backendConstants'
 const isForm = require('./util/isForm');
 
 class WorkspaceService {
-    constructor() {
-
+    constructor(workspace) {
+        this.currentWorkspace = workspace;
     }
 
     setCurrentWorkspace(workspace) {
@@ -43,8 +43,30 @@ class WorkspaceService {
         }
     }
 
-    formExists(fileName) {
+    formExistsByName(fileName) {
         return fs.existsSync(this._getFormPathByName(fileName));
+    }
+
+    componentExistsByPath(componentPath) {
+
+    }
+
+    addCustomComponent() {
+        const name = path.basename(filePath).slice(0, -path.extname(filePath).length);
+        const folderExists = fs.existsSync(this.pathToCustomComponentsFolder);
+        try {
+            if (!folderExists) {
+                fs.mkdirSync(this.pathToCustomComponentsFolder);
+            }
+        } catch (err) {
+            this.throwError(err);
+        }
+        try {
+            const newCustomComponentInsides = fs.readFileSync(filePath, { encoding: 'utf8' });
+            fs.writeFileSync(path.resolve(this.pathToCustomComponentsFolder, name), newCustomComponentInsides, { encoding: 'utf8' });
+        } catch (err) {
+            this.throwError(err);
+        }
     }
 
     saveForm(form) {
@@ -53,10 +75,8 @@ class WorkspaceService {
             form = JSON.stringify(form);
             fs.writeFileSync(this._getFormPathByName(formBaseName), form);
         } catch (err) {
-            console.error(err);
-            return false;
+            this.throwError(err);
         }
-        return true;
     }
 
     getForm(formPath) {

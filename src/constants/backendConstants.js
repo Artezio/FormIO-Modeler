@@ -1,5 +1,6 @@
 const { app } = require('electron');
 const path = require('path');
+const { NOT_VALID_FORM } = require('./mutualConstants');
 
 exports.BASE_TITLE = 'FormBuilder';
 exports.PATH_TO_WORKSPACES_INFO = path.resolve(app.getAppPath(), './src/recentWorkspaces.txt');
@@ -17,3 +18,4 @@ exports.CONFIRM_CONSTANTS = {
 }
 exports.FORM_TYPE = 'form';
 exports.CUSTOM_COMPONENTS_FOLDER_NAME = '.customComponents';
+exports.NOT_VALID_FORM = NOT_VALID_FORM;

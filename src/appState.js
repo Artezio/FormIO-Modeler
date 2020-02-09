@@ -3,7 +3,8 @@ const uuid = require('uuid/v1');
 const { PATH_TO_WORKSPACES_INFO, MAX_RECENT_WORKSPACES, FORM_TYPE } = require('./constants/backendConstants');
 
 class AppState {
-    constructor() {
+    constructor(workspaceService) {
+        this.workspaceService = workspaceService;
         this.recentWorkspaces = [];
         this.form = {};
         this.formSaved = true;
@@ -30,7 +31,9 @@ class AppState {
                     throw new Error('Workspaces are not valid');
                 }
                 workspaces.forEach(workspace => {
-                    this.addRecentWorkspace(workspace);
+                    if (fs.existsSync(workspace)) {
+                        this.addRecentWorkspace(workspace);
+                    }
                 })
             } else {
                 throw new Error('Workspaces not found');
@@ -43,7 +46,9 @@ class AppState {
     setCurrentWorkspace(workspace) {
         this.currentWorkspace = workspace;
         this.addRecentWorkspace(workspace);
+        this.workspaceService.setCurrentWorkspace(workspace);
         this.saveRecentWorkspaces();
+        this.formSaved = true;
     }
 
     saveRecentWorkspaces() {
@@ -57,6 +62,7 @@ class AppState {
 
     setForm(form) {
         this.form = form;
+        this.formSaved = true;
     }
 
     adjustForm(changes = {}) {

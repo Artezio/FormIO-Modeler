@@ -30,7 +30,7 @@ class ElectronDialog {
         switch (answer) {
             case 0: return CONFIRM_CONSTANTS.CANCEL;
             case 1: return CONFIRM_CONSTANTS.SAVE;
-            case 2: return CONFIRM_CONSTANTS.DONT_SAVE;
+            case 2: return CONFIRM_CONSTANTS.NOT_SAVE;
             default: return CONFIRM_CONSTANTS.CANCEL;
         }
     }
@@ -48,7 +48,7 @@ class ElectronDialog {
         switch (answer) {
             case 0: return CONFIRM_CONSTANTS.CANCEL;
             case 1: return CONFIRM_CONSTANTS.SAVE;
-            case 2: return CONFIRM_CONSTANTS.DONT_SAVE;
+            case 2: return CONFIRM_CONSTANTS.NOT_SAVE;
             default: return CONFIRM_CONSTANTS.CANCEL;
         }
     }
@@ -66,7 +66,7 @@ class ElectronDialog {
         switch (answer) {
             case 0: return CONFIRM_CONSTANTS.CANCEL;
             case 1: return CONFIRM_CONSTANTS.SAVE;
-            case 2: return CONFIRM_CONSTANTS.DONT_SAVE;
+            case 2: return CONFIRM_CONSTANTS.NOT_SAVE;
             default: return CONFIRM_CONSTANTS.CANCEL;
         }
     }

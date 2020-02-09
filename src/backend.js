@@ -1,13 +1,14 @@
 const WorkspaceService = require('./workspaceService');
 const AppState = require('./appState');
-const { CONFIRM_CONSTANTS } = require('./constants/backendConstants');
+const { CONFIRM_CONSTANTS, NOT_VALID_FORM } = require('./constants/backendConstants');
 const isForm = require('./util/isForm');
 
 class Backend {
-    constructor(dialog) {
+    constructor(dialog, clientChanel) {
         this.dialog = dialog;
+        this.clientChanel = clientChanel;
         this.workspaceService = new WorkspaceService();
-        this.appState = new AppState();
+        this.appState = new AppState(this.workspaceService);
     }
 
     throwError(message) {
@@ -108,7 +109,7 @@ class Backend {
 
     setCurrentWorkspace(workspace) {
         if (this.appState.formSaved) {
-            this.workspaceService.setCurrentWorkspace(workspace);
+            this.appState.setCurrentWorkspace(workspace);
         } else {
             const answer = this.dialog.confirmChangeWorkspace();
             switch (answer) {
@@ -117,7 +118,7 @@ class Backend {
                     break;
                 }
                 case CONFIRM_CONSTANTS.NOT_SAVE: {
-                    this.workspaceService.setCurrentWorkspace(workspace);
+                    this.appState.setCurrentWorkspace(workspace);
                     break;
                 }
                 case CONFIRM_CONSTANTS.SAVE: {
@@ -138,7 +139,7 @@ class Backend {
             if (!workspace) {
                 this.throwError('Directory not selected');
             }
-            this.workspaceService.setCurrentWorkspace(workspace);
+            this.appState.setCurrentWorkspace(workspace);
         } else {
             const answer = this.dialog.confirmChangeWorkspace();
             switch (answer) {
@@ -151,7 +152,7 @@ class Backend {
                     if (!workspace) {
                         this.throwError('Directory not selected');
                     }
-                    this.workspaceService.setCurrentWorkspace(workspace);
+                    this.appState.setCurrentWorkspace(workspace);
                     break;
                 }
                 case CONFIRM_CONSTANTS.SAVE: {
@@ -167,23 +168,48 @@ class Backend {
     }
 
     saveCurrentForm() {
-        if (this.appState.formSaved) this.throwError('Form saved');
+        if (this.appState.formSaved) return;
         const form = this.appState.form;
         if (!isForm(form)) {
-            this.throwError('Not valid form');
+            this.clientChanel.sendError('saveCurrentForm');
+            this.throwError(NOT_VALID_FORM);
         }
-        const formExists = this.workspaceService.formExists(form.path);
+        const formExists = this.workspaceService.formExistsByName(form.path);
         if (formExists) {
             const canReplace = this.dialog.confirmReplaceFile();
             if (canReplace) {
                 this.workspaceService.saveForm(form);
                 this.appState.formSaved = true;
+                this.clientChanel.send('saveCurrentForm');
             } else {
                 this.throwError('Action canceled');
             }
         } else {
             this.workspaceService.saveForm(form);
             this.appState.formSaved = true;
+            this.clientChanel.send('saveCurrentForm');
+        }
+    }
+
+    closeApp() {
+        if (this.appState.formSaved) return;
+        const answer = this.dialog.confirmCloseMainWindow();
+        switch (answer) {
+            case CONFIRM_CONSTANTS.CANCEL: {
+                this.throwError('Action canceled');
+                break;
+            }
+            case CONFIRM_CONSTANTS.NOT_SAVE: {
+                return;
+            }
+            case CONFIRM_CONSTANTS.SAVE: {
+                this.saveCurrentForm();
+                break;
+            }
+            default: {
+                this.throwError('Action canceled');
+                break;
+            }
         }
     }
 
@@ -213,7 +239,7 @@ class Backend {
     }
 
     getCurrentWorkspace() {
-        return this.workspaceService.currentWorkspace;
+        return this.appState.currentWorkspace;
     }
 }
 

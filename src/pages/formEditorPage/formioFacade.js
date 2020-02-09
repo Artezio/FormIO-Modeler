@@ -87,12 +87,15 @@ class FormioFacade {
         })
     }
 
-    attachForm(schema, options = {}) {
+    attachForm(schema = {}, options = {}) {
         Formio.createForm(this.formContainer, schema, options).then(rendererInstance => {
             this.form = rendererInstance;
             this.form.nosubmit = true;
             if (this.onSubmit) {
-                this.form.on('submit', this.onSubmit);
+                this.form.on('submit', submission => {
+                    this.onSubmit(submission);
+                    this.form && this.form.emit('submitDone', submission);
+                });
             }
         })
     }

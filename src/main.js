@@ -30,7 +30,7 @@ function run() {
     createMainWindow();
     electronDialog = new ElectronDialog(dialog, mainWindow);
     clientChanel = new ClientChanel(mainWindow);
-    backend = new Backend(electronDialog);
+    backend = new Backend(electronDialog, clientChanel);
     unsubscribe = subscribe();
     showStartPage();
     setMenu();
@@ -54,7 +54,7 @@ function createMainWindow() {
         }
     }).on('close', e => {
         try {
-            backend.saveCurrentForm();
+            backend.closeApp();
         } catch (err) {
             e.preventDefault();
         }
@@ -159,9 +159,8 @@ function changeCurrentWorkspaceHandler() {
 function saveCurrentFormHandler() {
     try {
         backend.saveCurrentForm();
-        clientChanel.send('saveCurrentForm');
     } catch (err) {
-        clientChanel.sendError('saveCurrentForm', err);
+        console.error(err);
     }
 }
 
