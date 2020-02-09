@@ -35,8 +35,20 @@ function run() {
     loadCustomComponentsDetails();
 }
 
-function getErrorMessage(error) {
-    return error.slice(7);
+function openNewForm() {
+    ipcRenderer.send('openNewForm.start');
+}
+
+function saveCurrentForm() {
+    ipcRenderer.send('saveCurrentForm.start');
+}
+
+function changeCurrentWorkspace() {
+    ipcRenderer.send('changeCurrentWorkspace.start');
+}
+
+function registerCustomComponent() {
+    ipcRenderer.send('registerCustomComponent.start');
 }
 
 function changeFormDetailsHandler() {

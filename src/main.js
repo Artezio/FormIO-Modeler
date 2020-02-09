@@ -285,6 +285,8 @@ function subscribe() {
     clientChanel.on('adjustForm', adjustFormHandler);
     clientChanel.on('getFormById', getFormByIdHandler);
     clientChanel.on('registerCustomComponent', registerCustomComponentHandler);
+    clientChanel.on('openNewForm', openNewFormHandler);
+    clientChanel.on('saveCurrentForm', saveCurrentFormHandler);
 
     return function () {
         clientChanel.off('getRecentWorkspaces', getRecentWorkspacesHandler);
@@ -299,6 +301,8 @@ function subscribe() {
         clientChanel.off('adjustForm', adjustFormHandler);
         clientChanel.off('getFormById', getFormByIdHandler);
         clientChanel.off('registerCustomComponent', registerCustomComponentHandler);
+        clientChanel.off('openNewForm', openNewFormHandler);
+        clientChanel.off('saveCurrentForm', saveCurrentFormHandler);
     }
 }
 
