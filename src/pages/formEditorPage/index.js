@@ -3,7 +3,7 @@ const $ = require('jquery');
 const initJQueryNotify = require('../../libs/notify');
 const FormioFacade = require('./formioFacade');
 const JsonViewerFacade = require('./jsonViewerFacade');
-const { SAVED_MESSAGE, NOT_VALID_FORM } = require('../../constants/clientConstants')
+const { SAVED_MESSAGE } = require('../../constants/clientConstants')
 
 require('bootstrap');
 initJQueryNotify();

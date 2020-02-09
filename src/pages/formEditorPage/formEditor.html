@@ -3,21 +3,29 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Formio</title>
     <link rel="stylesheet" href="../../assets/bootstrap.min.css">
     <link rel="stylesheet" href="../../assets/formio.full.min.css">
     <link rel="stylesheet" href="../../assets/mainPage.css">
     <link rel="stylesheet" href="../../assets/json-viewer.css">
+    <!-- <link rel="stylesheet" href="../../assets/font-awesome.min.css"> -->
 </head>
 
 <body>
+    <div id="toolbar" class="btn-toolbar p-1 mb-3">
+        <button class="btn btn-sm toolbar__btn" onclick="openNewForm()">
+            <i class="fa fa-file-o" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-sm toolbar__btn" onclick="saveCurrentForm()">
+            <i class="fa fa-floppy-o" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-sm toolbar__btn" onclick="changeCurrentWorkspace()">
+            <img src="../../assets/fonts/change-workspace.svg" width="16px" height="20px">
+        </button>
+        <button class="btn btn-sm toolbar__btn" onclick="registerCustomComponent()">
+            <img src="../../assets/fonts/register-custom-component.svg" width="16px" height="20px">
+        </button>
+    </div>
     <div class="container-fluid py-2">
-        <div id="toolbar">
-            <button class="toolbar__btn" onclick="openNewForm()"></button>
-            <button class="toolbar__btn" onclick="saveCurrentForm()"></button>
-            <button class="toolbar__btn" onclick="changeCurrentWorkspace()"></button>
-            <button class="toolbar__btn" onclick="registerCustomComponent()"></button>
-        </div>
         <div id="mainContentWrapper">
             <ul class="nav nav-tabs" id="formio-builder-tabs" role="tablist">
                 <li class="nav-item">

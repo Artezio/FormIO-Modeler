@@ -156,8 +156,18 @@ function changeCurrentWorkspaceHandler() {
         backend.changeCurrentWorkspace();
         setMenu();
         showStartPage();
+        setAppTitle();
     } catch (err) {
         console.error(err);
+    }
+}
+
+function setAppTitle() {
+    const currentWorkspace = backend.getCurrentWorkspace();
+    if (currentWorkspace) {
+        mainWindow.setTitle(`${BASE_TITLE} - [${currentWorkspace}]`);
+    } else {
+        mainWindow.setTitle(BASE_TITLE);
     }
 }
 
@@ -202,6 +212,7 @@ function setCurrentWorkspaceHandler(event, result = {}) {
         backend.setCurrentWorkspace(workspace);
         setMenu();
         clientChanel.send('setCurrentWorkspace');
+        setAppTitle();
     } catch (err) {
         clientChanel.sendError('setCurrentWorkspace', err);
     }
