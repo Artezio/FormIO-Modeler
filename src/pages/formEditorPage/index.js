@@ -132,27 +132,29 @@ function setFormDetails(form = {}) {
     })
 }
 
-function focusFirstInvalidField() {
-
-}
-
 function saveCurrentFormEndHandler(event, result = {}) {
     if (!result.error) {
         $.notify(SAVED_MESSAGE, 'success');
-    } else {
-        focusFirstInvalidField();
     }
+}
+
+function focusFieldByNameEndHandler(event, result = {}) {
+    const name = result.payload;
+    const field = detailsForm.elements[name];
+    field && field.focus();
 }
 
 function subscribeOnEvents() {
     ipcRenderer.on('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
     ipcRenderer.on('getCurrentForm.end', getCurrentFormEndHandler);
     ipcRenderer.on('saveCurrentForm.end', saveCurrentFormEndHandler);
+    ipcRenderer.on('focusFieldByName.end', focusFieldByNameEndHandler);
 
     return function () {
         ipcRenderer.removeListener('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
         ipcRenderer.removeListener('getCurrentForm.end', getCurrentFormEndHandler);
         ipcRenderer.removeListener('saveCurrentForm.end', saveCurrentFormEndHandler);
+        ipcRenderer.removeListener('focusFieldByName.end', focusFieldByNameEndHandler);
     }
 }
 

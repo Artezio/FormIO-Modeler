@@ -51,8 +51,8 @@ class WorkspaceService {
 
     }
 
-    addCustomComponent() {
-        const name = path.basename(filePath).slice(0, -path.extname(filePath).length);
+    addCustomComponent(filePath) {
+        const name = path.basename(filePath);
         const folderExists = fs.existsSync(this.pathToCustomComponentsFolder);
         try {
             if (!folderExists) {

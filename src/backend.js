@@ -1,5 +1,6 @@
 const WorkspaceService = require('./workspaceService');
 const AppState = require('./appState');
+const path = require('path');
 const { CONFIRM_CONSTANTS, NOT_VALID_FORM } = require('./constants/backendConstants');
 const isForm = require('./util/isForm');
 
@@ -171,7 +172,7 @@ class Backend {
         if (this.appState.formSaved) return;
         const form = this.appState.form;
         if (!isForm(form)) {
-            this.clientChanel.sendError('saveCurrentForm');
+            this.alertInvalidField();
             this.throwError(NOT_VALID_FORM);
         }
         const formExists = this.workspaceService.formExistsByName(form.path);
@@ -188,6 +189,24 @@ class Backend {
             this.workspaceService.saveForm(form);
             this.appState.formSaved = true;
             this.clientChanel.send('saveCurrentForm');
+        }
+    }
+
+    alertInvalidField() {
+        if (!this.appState.form.title) {
+            this.dialog.alert('Enter title to save form.');
+            this.clientChanel.send('focusFieldByName', 'title');
+            return;
+        }
+        if (!this.appState.form.name) {
+            this.dialog.alert('Enter name to save form.');
+            this.clientChanel.send('focusFieldByName', 'name');
+            return;
+        }
+        if (!this.appState.form.path) {
+            this.dialog.alert('Enter path to save form.');
+            this.clientChanel.send('focusFieldByName', 'path');
+            return;
         }
     }
 
@@ -210,6 +229,26 @@ class Backend {
                 this.throwError('Action canceled');
                 break;
             }
+        }
+    }
+
+    registerCustomComponent() {
+        const componentPaths = this.dialog.selectJsFiles();
+        if (!componentPaths) this.throwError('Action canceled');
+        try {
+            const currentCustomComponentsDetails = this.workspaceService.getCustomComponentsDetails();
+            const replacedComponents = componentPaths.forEach(componentPath => {
+                const componentName = path.basename(componentPath).slice(0, -path.extname(componentPath).length);
+                if (currentCustomComponentsDetails.some(componentDetails => componentDetails.name === componentName)) {
+                    const canReplace = this.dialog.confirmReplaceFile(componentName);
+                    if (!canReplace) return false;
+                }
+                this.workspaceService.addCustomComponent(componentPath);
+                return true;
+            })
+            if (!replacedComponents.length) this.throwError('Action canceled');
+        } catch (err) {
+            this.throwError(err);
         }
     }
 

@@ -143,7 +143,12 @@ function toggleDevTools(item, focusedWindow) {
 }
 
 function registerCustomComponentHandler() {
-
+    try {
+        backend.registerCustomComponent();
+        showFormEditorPage();
+    } catch (err) {
+        clientChanel.sendError('registerCustomComponent', err);
+    }
 }
 
 function changeCurrentWorkspaceHandler() {
@@ -279,6 +284,7 @@ function subscribe() {
     clientChanel.on('openNewForm', openNewFormHandler);
     clientChanel.on('adjustForm', adjustFormHandler);
     clientChanel.on('getFormById', getFormByIdHandler);
+    clientChanel.on('registerCustomComponent', registerCustomComponentHandler);
 
     return function () {
         clientChanel.off('getRecentWorkspaces', getRecentWorkspacesHandler);
@@ -292,6 +298,7 @@ function subscribe() {
         clientChanel.off('openNewForm', openNewFormHandler);
         clientChanel.off('adjustForm', adjustFormHandler);
         clientChanel.off('getFormById', getFormByIdHandler);
+        clientChanel.off('registerCustomComponent', registerCustomComponentHandler);
     }
 }
 

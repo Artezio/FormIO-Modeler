@@ -30,10 +30,9 @@ class AppState {
                 if (!Array.isArray(workspaces)) {
                     throw new Error('Workspaces are not valid');
                 }
-                workspaces.forEach(workspace => {
-                    if (fs.existsSync(workspace)) {
-                        this.addRecentWorkspace(workspace);
-                    }
+                workspaces = workspaces.filter(workspace => fs.existsSync(workspace));
+                workspaces.slice(0, MAX_RECENT_WORKSPACES).forEach(workspace => {
+                    this.recentWorkspaces.push(workspace);
                 })
             } else {
                 throw new Error('Workspaces not found');

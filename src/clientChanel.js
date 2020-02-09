@@ -26,7 +26,7 @@ class ClientChanel {
     }
 
     sendError(event, err) {
-        this.mainWindow.webContents.send(this._toEnd(event), { error: err });
+        this.mainWindow.webContents.send(this._toEnd(event), { error: err || true });
     }
 }
 

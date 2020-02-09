@@ -94,6 +94,16 @@ class ElectronDialog {
         });
         return filePaths && filePaths[0];
     }
+
+    selectJsFiles() {
+        const filePaths = this.dialog.showOpenDialogSync(this.window, {
+            filters: [
+                { name: 'custom component', extensions: ['js'] },
+            ],
+            properties: ['openFile', 'multiSelections']
+        });
+        return filePaths && [...filePaths];
+    }
 }
 
 module.exports = ElectronDialog;
