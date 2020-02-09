@@ -1,10 +1,8 @@
 const { ipcRenderer } = require('electron');
 const clearNode = require('../../util/clearNode');
 
-const listContainer = document.getElementById('list-wrapper');
-const commandsContainer = document.getElementById('commands-wrapper');
 const title = document.getElementById('title');
-const listTitle = document.getElementById('list-wrapper-label');
+const contentContainer = document.getElementById('content');
 
 function run() {
     const unsubscribe = subscribeOnMainStreamEvents();
@@ -67,19 +65,33 @@ function getCurrentWorkspaceEndHandler(event, result = {}) {
     }
 }
 
+function createColumn(className, title, list) {
+    const div = document.createElement('div');
+    div.className = className;
+    const label = document.createElement('label');
+    label.className = 'h4';
+    label.textContent = title;
+    div.append(label);
+    div.append(list);
+    return div;
+}
+
 function getRecentWorkspacesEndHandler(event, result = {}) {
     if (!result.error) {
         const recentWorkspaces = result.payload;
-        clearNode(listContainer, commandsContainer);
-        const workspacesList = recentWorkspaces.map(workspace => ({
-            title: workspace,
-            callback: () => setCurrentWorkspace(workspace)
-        }))
-        listContainer.append(createList(workspacesList));
-        commandsContainer.append(createList([{
+        clearNode(contentContainer);
+        if (recentWorkspaces.length) {
+            const workspacesList = createList(recentWorkspaces.map(workspace => ({
+                title: workspace,
+                callback: () => setCurrentWorkspace(workspace)
+            })))
+            contentContainer.append(createColumn('col-auto', 'Recent', workspacesList));
+        }
+        const commandsList = createList([{
             title: 'Open new',
             callback: () => openNewWorkspace()
-        }]))
+        }])
+        contentContainer.append(createColumn('col', 'Start', commandsList));
     }
 }
 
@@ -89,19 +101,21 @@ function setCurrentWorkspaceEndHandler() {
 
 function getFormsEndHandler(event, result = {}) {
     if (!result.error) {
-        const forms = result.payload;
-        clearNode(listContainer, commandsContainer, title);
         title.textContent = "Select form";
-        listTitle.textContent = "Forms";
-        const formsList = forms.map(form => ({
-            title: form.title,
-            callback: () => loadForm(form)
-        }))
-        listContainer.append(createList(formsList));
-        commandsContainer.append(createList([{
+        const forms = result.payload;
+        clearNode(contentContainer);
+        if (forms.length) {
+            const formsList = createList(forms.map(form => ({
+                title: form.title,
+                callback: () => loadForm(form)
+            })))
+            contentContainer.append(createColumn('col-auto', 'Forms', formsList));
+        }
+        const commandsList = createList([{
             title: 'Create new',
             callback: () => openNewForm()
-        }]))
+        }])
+        contentContainer.append(createColumn('col', 'Start', commandsList));
     }
 }
 
