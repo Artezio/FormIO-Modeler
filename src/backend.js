@@ -32,6 +32,7 @@ class Backend {
                 }
                 case CONFIRM_CONSTANTS.SAVE: {
                     this.saveCurrentForm();
+                    this.appState.setForm(form);
                     break;
                 }
                 default: {
@@ -68,6 +69,12 @@ class Backend {
                 }
                 case CONFIRM_CONSTANTS.SAVE: {
                     this.saveCurrentForm();
+                    const formPath = this.dialog.selectJsonFile();
+                    if (!formPath) {
+                        this.throwError('Action canceled');
+                    }
+                    const form = this.workspaceService.getForm(formPath);
+                    this.appState.setForm(form);
                     break;
                 }
                 default: {
@@ -94,6 +101,7 @@ class Backend {
                 }
                 case CONFIRM_CONSTANTS.SAVE: {
                     this.saveCurrentForm();
+                    this.appState.setForm({});
                     break;
                 }
                 default: {
@@ -124,6 +132,7 @@ class Backend {
                 }
                 case CONFIRM_CONSTANTS.SAVE: {
                     this.saveCurrentForm();
+                    this.appState.setCurrentWorkspace(workspace);
                     break;
                 }
                 default: {
@@ -158,6 +167,11 @@ class Backend {
                 }
                 case CONFIRM_CONSTANTS.SAVE: {
                     this.saveCurrentForm();
+                    const workspace = this.dialog.selectDirectory();
+                    if (!workspace) {
+                        this.throwError('Directory not selected');
+                    }
+                    this.appState.setCurrentWorkspace(workspace);
                     break;
                 }
                 default: {
@@ -232,12 +246,39 @@ class Backend {
         }
     }
 
+    // closeCurrentForm(confirm) {
+    //     if (this.appState.formSaved) return;
+    //     const answer = confirm();
+    //     switch (answer) {
+    //         case CONFIRM_CONSTANTS.CANCEL: {
+    //             this.throwError('Action canceled');
+    //             break;
+    //         }
+    //         case CONFIRM_CONSTANTS.NOT_SAVE: {
+    //             return;
+    //         }
+    //         case CONFIRM_CONSTANTS.SAVE: {
+    //             this.saveCurrentForm();
+    //             break;
+    //         }
+    //         default: {
+    //             this.throwError('Action canceled');
+    //             break;
+    //         }
+    //     }
+    // }
+
     registerCustomComponents() {
         const componentPaths = this.dialog.selectJsFiles();
         if (!componentPaths) this.throwError('Action canceled');
         try {
-            const currentCustomComponentsDetails = this.workspaceService.getCustomComponentsDetails();
-            const replacedComponents = componentPaths.forEach(componentPath => {
+            let currentCustomComponentsDetails;
+            try {
+                currentCustomComponentsDetails = this.workspaceService.getCustomComponentsDetails();
+            } catch (err) {
+                currentCustomComponentsDetails = [];
+            }
+            const replacedComponents = componentPaths.filter(componentPath => {
                 const componentName = path.basename(componentPath).slice(0, -path.extname(componentPath).length);
                 if (currentCustomComponentsDetails.some(componentDetails => componentDetails.name === componentName)) {
                     const canReplace = this.dialog.confirmReplaceFile(componentName);

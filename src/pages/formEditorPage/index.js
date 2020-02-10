@@ -48,7 +48,7 @@ function changeCurrentWorkspace() {
 }
 
 function registerCustomComponent() {
-    ipcRenderer.send('registerCustomComponent.start');
+    ipcRenderer.send('registerCustomComponents.start');
 }
 
 function changeFormDetailsHandler() {

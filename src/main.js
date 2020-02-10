@@ -295,7 +295,7 @@ function subscribe() {
     clientChanel.on('openNewForm', openNewFormHandler);
     clientChanel.on('adjustForm', adjustFormHandler);
     clientChanel.on('getFormById', getFormByIdHandler);
-    clientChanel.on('registerCustomComponentss', registerCustomComponentsHandler);
+    clientChanel.on('registerCustomComponents', registerCustomComponentsHandler);
     clientChanel.on('openNewForm', openNewFormHandler);
     clientChanel.on('saveCurrentForm', saveCurrentFormHandler);
 
