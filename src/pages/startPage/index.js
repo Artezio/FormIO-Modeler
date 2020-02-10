@@ -1,8 +1,11 @@
 const { ipcRenderer } = require('electron');
 const clearNode = require('../../util/clearNode');
+const path = require('path');
 
 const title = document.getElementById('title');
 const contentContainer = document.getElementById('content');
+
+let currentWorkspace;
 
 function run() {
     const unsubscribe = subscribeOnMainStreamEvents();
@@ -15,7 +18,7 @@ function createList(list) {
     div.classList.add('list-group', 'list-group-flush');
     list.forEach(({ title, callback }) => {
         const a = document.createElement('a');
-        a.classList.add('list-group-item', 'text-primary');
+        a.classList.add('text-primary');
         a.href = 'javascript:void(0)';
         a.onclick = callback;
         a.textContent = title;
@@ -54,7 +57,7 @@ function openNewForm() {
 
 function getCurrentWorkspaceEndHandler(event, result = {}) {
     if (!result.error) {
-        const currentWorkspace = result.payload;
+        currentWorkspace = result.payload;
         if (currentWorkspace) {
             getForms();
         } else {
@@ -95,24 +98,28 @@ function getRecentWorkspacesEndHandler(event, result = {}) {
     }
 }
 
-function setCurrentWorkspaceEndHandler() {
+function setCurrentWorkspaceEndHandler(event, result) {
+    currentWorkspace = result.payload;
     getForms();
 }
 
 function getFormsEndHandler(event, result = {}) {
     if (!result.error) {
-        title.textContent = "Select form";
+        title.textContent = currentWorkspace;
         const forms = result.payload;
         clearNode(contentContainer);
         if (forms.length) {
-            const formsList = createList(forms.map(form => ({
-                title: form.title,
-                callback: () => loadForm(form)
-            })))
+            const formsList = createList(forms.map(form => {
+                const title = `${form.path} (${form.title})`;
+                return {
+                    title,
+                    callback: () => loadForm(form)
+                }
+            }));
             contentContainer.append(createColumn('col-auto', 'Forms', formsList));
         }
         const commandsList = createList([{
-            title: 'Create new',
+            title: 'Create new form',
             callback: () => openNewForm()
         }])
         contentContainer.append(createColumn('col', 'Start', commandsList));

@@ -1,1 +1,1 @@
-["C:\\Users\\Ddante\\Documents\\test(can be easyly deleted)\\.customComponents","C:\\Users\\Ddante\\Documents\\test(can be easyly deleted)"]
+["D:\\Works\\formio-electron\\saves"]

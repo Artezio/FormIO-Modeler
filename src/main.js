@@ -211,7 +211,7 @@ function setCurrentWorkspaceHandler(event, result = {}) {
     try {
         backend.setCurrentWorkspace(workspace);
         setMenu();
-        clientChanel.send('setCurrentWorkspace');
+        clientChanel.send('setCurrentWorkspace', workspace);
         setAppTitle();
     } catch (err) {
         clientChanel.sendError('setCurrentWorkspace', err);
