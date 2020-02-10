@@ -18,7 +18,7 @@ class ClientChanel {
     }
 
     off(event, handler) {
-        ipcMain.removeListener(this._toStart(event), handler);
+        ipcMain.off(this._toStart(event), handler);
     }
 
     send(event, data) {

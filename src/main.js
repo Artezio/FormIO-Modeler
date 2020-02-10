@@ -292,7 +292,6 @@ function subscribe() {
     clientChanel.on('getCurrentForm', getCurrentFormHandler);
     clientChanel.on('getForms', getFormsHandler);
     clientChanel.on('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
-    clientChanel.on('openNewForm', openNewFormHandler);
     clientChanel.on('adjustForm', adjustFormHandler);
     clientChanel.on('getFormById', getFormByIdHandler);
     clientChanel.on('registerCustomComponents', registerCustomComponentsHandler);
@@ -308,7 +307,6 @@ function subscribe() {
         clientChanel.off('getCurrentForm', getCurrentFormHandler);
         clientChanel.off('getForms', getFormsHandler);
         clientChanel.off('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
-        clientChanel.off('openNewForm', openNewFormHandler);
         clientChanel.off('adjustForm', adjustFormHandler);
         clientChanel.off('getFormById', getFormByIdHandler);
         clientChanel.off('registerCustomComponents', registerCustomComponentsHandler);

@@ -17,99 +17,23 @@ class Backend {
     }
 
     setCurrentForm(form) {
-        if (this.appState.formSaved) {
-            this.appState.setForm(form);
-        } else {
-            const answer = this.dialog.confirmOpenNewForm();
-            switch (answer) {
-                case CONFIRM_CONSTANTS.CANCEL: {
-                    this.throwError('Action canceled');
-                    break;
-                }
-                case CONFIRM_CONSTANTS.NOT_SAVE: {
-                    this.appState.setForm(form);
-                    break;
-                }
-                case CONFIRM_CONSTANTS.SAVE: {
-                    this.saveCurrentForm();
-                    this.appState.setForm(form);
-                    break;
-                }
-                default: {
-                    this.throwError('Action canceled');
-                    break;
-                }
-            }
-        }
+        this.closeCurrentForm(() => this.dialog.confirmOpenNewForm());
+        this.appState.setForm(form);
     }
 
     openForm() {
-        if (this.appState.formSaved) {
-            const formPath = this.dialog.selectJsonFile();
-            if (!formPath) {
-                this.throwError('Action canceled');
-            }
-            const form = this.workspaceService.getForm(formPath);
-            this.appState.setForm(form);
-        } else {
-            const answer = this.dialog.confirmOpenNewForm();
-            switch (answer) {
-                case CONFIRM_CONSTANTS.CANCEL: {
-                    this.throwError('Action canceled');
-                    break;
-                }
-                case CONFIRM_CONSTANTS.NOT_SAVE: {
-                    const formPath = this.dialog.selectJsonFile();
-                    if (!formPath) {
-                        this.throwError('Action canceled');
-                    }
-                    const form = this.workspaceService.getForm(formPath);
-                    this.appState.setForm(form);
-                    break;
-                }
-                case CONFIRM_CONSTANTS.SAVE: {
-                    this.saveCurrentForm();
-                    const formPath = this.dialog.selectJsonFile();
-                    if (!formPath) {
-                        this.throwError('Action canceled');
-                    }
-                    const form = this.workspaceService.getForm(formPath);
-                    this.appState.setForm(form);
-                    break;
-                }
-                default: {
-                    this.throwError('Action canceled');
-                    break;
-                }
-            }
+        this.closeCurrentForm(() => this.dialog.selectJsonFile());
+        const formPath = this.dialog.selectJsonFile();
+        if (!formPath) {
+            this.throwError('Action canceled');
         }
+        const form = this.workspaceService.getForm(formPath);
+        this.appState.setForm(form);
     }
 
     openNewForm() {
-        if (this.appState.formSaved) {
-            this.appState.setForm({});
-        } else {
-            const answer = this.dialog.confirmOpenNewForm();
-            switch (answer) {
-                case CONFIRM_CONSTANTS.CANCEL: {
-                    this.throwError('Action canceled');
-                    break;
-                }
-                case CONFIRM_CONSTANTS.NOT_SAVE: {
-                    this.appState.setForm({});
-                    break;
-                }
-                case CONFIRM_CONSTANTS.SAVE: {
-                    this.saveCurrentForm();
-                    this.appState.setForm({});
-                    break;
-                }
-                default: {
-                    this.throwError('Action canceled');
-                    break;
-                }
-            }
-        }
+        this.closeCurrentForm(() => this.dialog.confirmOpenNewForm());
+        this.appState.setForm({});
     }
 
     getCurrentForm() {
@@ -117,69 +41,17 @@ class Backend {
     }
 
     setCurrentWorkspace(workspace) {
-        if (this.appState.formSaved) {
-            this.appState.setCurrentWorkspace(workspace);
-        } else {
-            const answer = this.dialog.confirmChangeWorkspace();
-            switch (answer) {
-                case CONFIRM_CONSTANTS.CANCEL: {
-                    this.throwError('Action canceled');
-                    break;
-                }
-                case CONFIRM_CONSTANTS.NOT_SAVE: {
-                    this.appState.setCurrentWorkspace(workspace);
-                    break;
-                }
-                case CONFIRM_CONSTANTS.SAVE: {
-                    this.saveCurrentForm();
-                    this.appState.setCurrentWorkspace(workspace);
-                    break;
-                }
-                default: {
-                    this.throwError('Action canceled');
-                    break;
-                }
-            }
-        }
+        this.closeCurrentForm(() => this.dialog.confirmChangeWorkspace());
+        this.appState.setCurrentWorkspace(workspace);
     }
 
     changeCurrentWorkspace() {
-        if (this.appState.formSaved) {
-            const workspace = this.dialog.selectDirectory();
-            if (!workspace) {
-                this.throwError('Directory not selected');
-            }
-            this.appState.setCurrentWorkspace(workspace);
-        } else {
-            const answer = this.dialog.confirmChangeWorkspace();
-            switch (answer) {
-                case CONFIRM_CONSTANTS.CANCEL: {
-                    this.throwError('Action canceled');
-                    break;
-                }
-                case CONFIRM_CONSTANTS.NOT_SAVE: {
-                    const workspace = this.dialog.selectDirectory();
-                    if (!workspace) {
-                        this.throwError('Directory not selected');
-                    }
-                    this.appState.setCurrentWorkspace(workspace);
-                    break;
-                }
-                case CONFIRM_CONSTANTS.SAVE: {
-                    this.saveCurrentForm();
-                    const workspace = this.dialog.selectDirectory();
-                    if (!workspace) {
-                        this.throwError('Directory not selected');
-                    }
-                    this.appState.setCurrentWorkspace(workspace);
-                    break;
-                }
-                default: {
-                    this.throwError('Action canceled');
-                    break;
-                }
-            }
+        this.closeCurrentForm(() => this.dialog.confirmChangeWorkspace());
+        const workspace = this.dialog.selectDirectory();
+        if (!workspace) {
+            this.throwError('Directory not selected');
         }
+        this.appState.setCurrentWorkspace(workspace);
     }
 
     saveCurrentForm() {
@@ -225,8 +97,12 @@ class Backend {
     }
 
     closeApp() {
+        this.closeCurrentForm(() => this.dialog.confirmCloseMainWindow())
+    }
+
+    closeCurrentForm(confirm) {
         if (this.appState.formSaved) return;
-        const answer = this.dialog.confirmCloseMainWindow();
+        const answer = confirm();
         switch (answer) {
             case CONFIRM_CONSTANTS.CANCEL: {
                 this.throwError('Action canceled');
@@ -245,28 +121,6 @@ class Backend {
             }
         }
     }
-
-    // closeCurrentForm(confirm) {
-    //     if (this.appState.formSaved) return;
-    //     const answer = confirm();
-    //     switch (answer) {
-    //         case CONFIRM_CONSTANTS.CANCEL: {
-    //             this.throwError('Action canceled');
-    //             break;
-    //         }
-    //         case CONFIRM_CONSTANTS.NOT_SAVE: {
-    //             return;
-    //         }
-    //         case CONFIRM_CONSTANTS.SAVE: {
-    //             this.saveCurrentForm();
-    //             break;
-    //         }
-    //         default: {
-    //             this.throwError('Action canceled');
-    //             break;
-    //         }
-    //     }
-    // }
 
     registerCustomComponents() {
         const componentPaths = this.dialog.selectJsFiles();
