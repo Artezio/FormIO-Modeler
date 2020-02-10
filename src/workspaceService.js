@@ -12,7 +12,7 @@ class WorkspaceService {
         this.currentWorkspace = workspace;
     }
 
-    _getFormPathByName(name) {
+    _getFormPathByPathField(name) {
         return this._getPathByBaseName(name + '.json')
     }
 
@@ -43,12 +43,8 @@ class WorkspaceService {
         }
     }
 
-    formExistsByName(fileName) {
-        return fs.existsSync(this._getFormPathByName(fileName));
-    }
-
-    componentExistsByPath(componentPath) {
-
+    formExistsByPathField(pathField) {
+        return fs.existsSync(this._getFormPathByPathField(pathField));
     }
 
     addCustomComponent(filePath) {
@@ -70,10 +66,11 @@ class WorkspaceService {
     }
 
     saveForm(form) {
-        const formBaseName = form.path;
         try {
-            form = JSON.stringify(form);
-            fs.writeFileSync(this._getFormPathByName(formBaseName), form);
+            if (path.basename(form.path) !== form.path) {
+                fs.mkdirSync(this._getPathByBaseName(path.dirname(form.path)), { recursive: true });
+            }
+            fs.writeFileSync(this._getFormPathByPathField(form.path), JSON.stringify(form));
         } catch (err) {
             this.throwError(err);
         }
@@ -93,20 +90,30 @@ class WorkspaceService {
     }
 
     getForms() {
-        const fileBaseNames = fs.readdirSync(this.currentWorkspace);
-        if (!Array.isArray(fileBaseNames)) return [];
-        const formBaseNames = fileBaseNames.filter(fileBaseName => path.extname(fileBaseName) === '.json');
+        const forms = [];
         try {
-            const forms = formBaseNames.map(fileBaseName => {
-                const filePath = this._getPathByBaseName(fileBaseName);
-                let file = fs.readFileSync(filePath, { encoding: 'utf8' });
-                file = JSON.parse(file);
-                return file;
-            })
-            return forms.filter(isForm);
+            this._pullOutFormsFromByPath(this.currentWorkspace, forms);
         } catch (err) {
             this.throwError(err);
         }
+        return forms.filter(isForm);
+    }
+
+    _pullOutFormsFromByPath(dirPath, forms) {
+        const fileBaseNames = fs.readdirSync(dirPath);
+        fileBaseNames.forEach(fileBaseName => {
+            if (path.extname(fileBaseName) === '.json') {
+                try {
+                    let form = fs.readFileSync(path.resolve(dirPath, fileBaseName), { encoding: 'utf8' });
+                    form = JSON.parse(form);
+                    forms.push(form);
+                } catch (err) {
+                    console.info(err);
+                }
+            } else if (path.extname(fileBaseName) === '') {
+                this._pullOutFormsFromByPath(path.resolve(dirPath, fileBaseName), forms);
+            }
+        })
     }
 
     throwError(message) {

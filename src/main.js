@@ -120,7 +120,7 @@ function getMenuTemplate() {
             submenu: [
                 {
                     label: 'Register Custom Component',
-                    click: registerCustomComponentHandler,
+                    click: registerCustomComponentsHandler,
                     enabled: Boolean(backend && backend.getCurrentWorkspace())
                 }
             ]
@@ -142,12 +142,12 @@ function toggleDevTools(item, focusedWindow) {
     }
 }
 
-function registerCustomComponentHandler() {
+function registerCustomComponentsHandler() {
     try {
-        backend.registerCustomComponent();
+        backend.registerCustomComponents();
         showFormEditorPage();
     } catch (err) {
-        clientChanel.sendError('registerCustomComponent', err);
+        clientChanel.sendError('registerCustomComponents', err);
     }
 }
 
@@ -295,7 +295,7 @@ function subscribe() {
     clientChanel.on('openNewForm', openNewFormHandler);
     clientChanel.on('adjustForm', adjustFormHandler);
     clientChanel.on('getFormById', getFormByIdHandler);
-    clientChanel.on('registerCustomComponent', registerCustomComponentHandler);
+    clientChanel.on('registerCustomComponentss', registerCustomComponentsHandler);
     clientChanel.on('openNewForm', openNewFormHandler);
     clientChanel.on('saveCurrentForm', saveCurrentFormHandler);
 
@@ -311,7 +311,7 @@ function subscribe() {
         clientChanel.off('openNewForm', openNewFormHandler);
         clientChanel.off('adjustForm', adjustFormHandler);
         clientChanel.off('getFormById', getFormByIdHandler);
-        clientChanel.off('registerCustomComponent', registerCustomComponentHandler);
+        clientChanel.off('registerCustomComponents', registerCustomComponentsHandler);
         clientChanel.off('openNewForm', openNewFormHandler);
         clientChanel.off('saveCurrentForm', saveCurrentFormHandler);
     }

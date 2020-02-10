@@ -1,7 +1,7 @@
 {
   "name": "FormIO-editor",
   "version": "0.2.0",
-  "main": "src/main.js",
+  "main": "./index.js",
   "license": "MIT",
   "dependencies": {
     "bootstrap": "^4.4.1",
@@ -34,7 +34,7 @@
       "category": "public.app-category.developer-tools",
       "icon": "data/icons/mac/icon.icns"
     },
-    "linux": {  
+    "linux": {
       "target": "AppImage",
       "icon": "data/icons/png/icon.png"
     }

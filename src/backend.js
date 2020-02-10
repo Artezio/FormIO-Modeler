@@ -175,7 +175,7 @@ class Backend {
             this.alertInvalidField();
             this.throwError(NOT_VALID_FORM);
         }
-        const formExists = this.workspaceService.formExistsByName(form.path);
+        const formExists = this.workspaceService.formExistsByPathField(form.path);
         if (formExists) {
             const canReplace = this.dialog.confirmReplaceFile();
             if (canReplace) {
@@ -232,7 +232,7 @@ class Backend {
         }
     }
 
-    registerCustomComponent() {
+    registerCustomComponents() {
         const componentPaths = this.dialog.selectJsFiles();
         if (!componentPaths) this.throwError('Action canceled');
         try {
