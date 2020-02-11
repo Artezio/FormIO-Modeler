@@ -36,8 +36,11 @@ function run() {
 }
 
 function openNewForm() {
-    console.log(123)
     ipcRenderer.send('openNewForm.start');
+}
+
+function openForm() {
+    ipcRenderer.send('openForm.start');
 }
 
 function saveCurrentForm() {

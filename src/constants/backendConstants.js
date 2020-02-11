@@ -16,6 +16,6 @@ exports.CONFIRM_CONSTANTS = {
     SAVE: 'SAVE'
 }
 exports.FORM_TYPE = 'form';
-exports.CUSTOM_COMPONENTS_FOLDER_NAME = '.customComponents';
+exports.CUSTOM_COMPONENTS_FOLDER_NAME = 'custom-components';
 exports.NOT_VALID_FORM = 'Not valid form';
 exports.BASE_TITLE = 'FormBuilder'

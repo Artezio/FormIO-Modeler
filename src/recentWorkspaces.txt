@@ -1,1 +1,1 @@
-["C:\\Users\\dyakovenko\\Documents\\tmp","D:\\Works\\formio-electron\\saves\\.customComponents","D:\\Works\\formio-electron\\saves"]
+["D:\\Works\\formio-electron\\saves","C:\\Users\\dyakovenko\\Documents\\tmp","D:\\Works\\formio-electron\\saves\\.customComponents"]
