@@ -1,9 +1,10 @@
 const { ipcRenderer } = require('electron');
 const clearNode = require('../../util/clearNode');
-const path = require('path');
+const getLoader = require('../../util/getLoader');
 
 const title = document.getElementById('title');
 const contentContainer = document.getElementById('content');
+const loader = getLoader();
 
 let currentWorkspace;
 
@@ -126,17 +127,29 @@ function getFormsEndHandler(event, result = {}) {
     }
 }
 
+function attachLoaderEndHandler() {
+    document.body.append(loader);
+}
+
+function detachLoaderEndHandler() {
+    document.body.removeChild(loader);
+}
+
 function subscribeOnMainStreamEvents() {
     ipcRenderer.on('getRecentWorkspaces.end', getRecentWorkspacesEndHandler);
     ipcRenderer.on('setCurrentWorkspace.end', setCurrentWorkspaceEndHandler);
     ipcRenderer.on('getForms.end', getFormsEndHandler);
     ipcRenderer.on('getCurrentWorkspace.end', getCurrentWorkspaceEndHandler);
+    ipcRenderer.on('attachLoader.end', attachLoaderEndHandler);
+    ipcRenderer.on('detachLoader.end', detachLoaderEndHandler);
 
     return function () {
-        ipcRenderer.removeListener('getRecentWorkspaces.end', getRecentWorkspacesEndHandler);
-        ipcRenderer.removeListener('setCurrentWorkspace.end', setCurrentWorkspaceEndHandler);
-        ipcRenderer.removeListener('getForms.end', getFormsEndHandler);
-        ipcRenderer.removeListener('getCurrentWorkspace.end', getCurrentWorkspaceEndHandler);
+        ipcRenderer.off('getRecentWorkspaces.end', getRecentWorkspacesEndHandler);
+        ipcRenderer.off('setCurrentWorkspace.end', setCurrentWorkspaceEndHandler);
+        ipcRenderer.off('getForms.end', getFormsEndHandler);
+        ipcRenderer.off('getCurrentWorkspace.end', getCurrentWorkspaceEndHandler);
+        ipcRenderer.off('attachLoader.end', attachLoaderEndHandler);
+        ipcRenderer.off('detachLoader.end', detachLoaderEndHandler);
     }
 }
 

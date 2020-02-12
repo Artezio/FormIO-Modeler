@@ -70,10 +70,12 @@ function showPage(path) {
 }
 
 function showStartPage() {
+    clientChanel.send('attachLoader');
     return showPage(PATH_TO_START_PAGE);
 }
 
 function showFormEditorPage() {
+    clientChanel.send('attachLoader');
     return showPage(PATH_TO_FORM_EDITOR_PAGE);
 }
 

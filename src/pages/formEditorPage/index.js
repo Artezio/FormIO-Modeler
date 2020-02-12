@@ -4,6 +4,7 @@ const initJQueryNotify = require('../../libs/notify');
 const FormioFacade = require('./formioFacade');
 const JsonViewerFacade = require('./jsonViewerFacade');
 const { SAVED_MESSAGE } = require('../../constants/clientConstants')
+const getLoader = require('../../util/getLoader');
 
 require('bootstrap');
 initJQueryNotify();
@@ -13,6 +14,7 @@ const $viewDataTabLink = $(document.getElementById('view-data-tab'));
 const jsonContainer = document.getElementById('viewData');
 const builderContainer = document.getElementById('builder');
 const formContainer = document.getElementById('preview');
+const loader = getLoader();
 
 const formioFacade = new FormioFacade(builderContainer, formContainer, {
     getForms: getForms,
@@ -160,17 +162,29 @@ function focusFieldByNameEndHandler(event, result = {}) {
     field && field.focus();
 }
 
+function attachLoaderEndHandler() {
+    document.body.append(loader);
+}
+
+function detachLoaderEndHandler() {
+    document.body.removeChild(loader);
+}
+
 function subscribeOnEvents() {
     ipcRenderer.on('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
     ipcRenderer.on('getCurrentForm.end', getCurrentFormEndHandler);
     ipcRenderer.on('saveCurrentForm.end', saveCurrentFormEndHandler);
     ipcRenderer.on('focusFieldByName.end', focusFieldByNameEndHandler);
+    ipcRenderer.on('attachLoader.end', attachLoaderEndHandler);
+    ipcRenderer.on('detachLoader.end', detachLoaderEndHandler);
 
     return function () {
-        ipcRenderer.removeListener('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
-        ipcRenderer.removeListener('getCurrentForm.end', getCurrentFormEndHandler);
-        ipcRenderer.removeListener('saveCurrentForm.end', saveCurrentFormEndHandler);
-        ipcRenderer.removeListener('focusFieldByName.end', focusFieldByNameEndHandler);
+        ipcRenderer.off('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
+        ipcRenderer.off('getCurrentForm.end', getCurrentFormEndHandler);
+        ipcRenderer.off('saveCurrentForm.end', saveCurrentFormEndHandler);
+        ipcRenderer.off('focusFieldByName.end', focusFieldByNameEndHandler);
+        ipcRenderer.off('attachLoader.end', attachLoaderEndHandler);
+        ipcRenderer.off('detachLoader.end', detachLoaderEndHandler);
     }
 }
 
