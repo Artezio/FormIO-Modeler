@@ -53,7 +53,7 @@ function changeCurrentWorkspace() {
     ipcRenderer.send('changeCurrentWorkspace.start');
 }
 
-function registerCustomComponent() {
+function registerCustomComponents() {
     ipcRenderer.send('registerCustomComponents.start');
 }
 

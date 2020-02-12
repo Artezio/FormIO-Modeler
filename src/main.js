@@ -94,13 +94,13 @@ function getMenuTemplate() {
             label: 'File',
             submenu: [
                 {
-                    label: 'Create new',
+                    label: 'Create new form',
                     accelerator: 'CmdOrCtrl+N',
                     click: openNewFormHandler,
                     enabled: Boolean(backend && backend.getCurrentWorkspace())
                 },
                 {
-                    label: 'Open',
+                    label: 'Open form',
                     accelerator: 'CmdOrCtrl+O',
                     click: openFormHandler,
                     enabled: Boolean(backend && backend.getCurrentWorkspace())
@@ -121,7 +121,7 @@ function getMenuTemplate() {
             label: 'Components',
             submenu: [
                 {
-                    label: 'Register Custom Component',
+                    label: 'Register custom component',
                     click: registerCustomComponentsHandler,
                     enabled: Boolean(backend && backend.getCurrentWorkspace())
                 }

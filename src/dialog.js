@@ -11,7 +11,7 @@ class ElectronDialog {
             message: `${fileName} already exists.\nDo you want to replace it?`,
             cancelId: 1,
             defaultId: 1,
-            title: 'Save File',
+            title: 'Saving file',
             buttons: ['Yes', 'No']
         })
         return answer === 0;
@@ -21,7 +21,7 @@ class ElectronDialog {
         const answer = this.dialog.showMessageBoxSync(this.window, {
             message: 'Save form before opening new one?',
             type: 'question',
-            title: 'Open New Form',
+            title: 'Opening new form',
             cancelId: 0,
             defaultId: 0,
             noLink: true,
@@ -39,7 +39,7 @@ class ElectronDialog {
         const answer = this.dialog.showMessageBoxSync(this.window, {
             message: 'Save changes before changing workspace?',
             type: 'question',
-            title: 'Change Workspace',
+            title: 'Changing workspace',
             cancelId: 0,
             defaultId: 0,
             noLink: true,
@@ -57,7 +57,7 @@ class ElectronDialog {
         const answer = this.dialog.showMessageBoxSync(this.window, {
             message: 'Save changes before closing?',
             type: 'question',
-            title: 'Close File',
+            title: 'Closing form',
             cancelId: 0,
             defaultId: 0,
             noLink: true,
@@ -77,10 +77,11 @@ class ElectronDialog {
         })
     }
 
-    selectDirectory(title) {
+    selectDirectory() {
         const paths = this.dialog.showOpenDialogSync(this.window, {
             properties: ['openDirectory'],
-            title
+            title: 'Select current workspace',
+            buttonLabel: 'Select workspace'
         })
         return paths && paths[0];
     }
@@ -90,7 +91,9 @@ class ElectronDialog {
             filters: [
                 { name: 'formio', extensions: ['json'] },
             ],
-            properties: ['openFile']
+            properties: ['openFile'],
+            title: 'Open form',
+            buttonLabel: 'Open form'
         });
         return filePaths && filePaths[0];
     }
@@ -100,7 +103,9 @@ class ElectronDialog {
             filters: [
                 { name: 'custom component', extensions: ['js'] },
             ],
-            properties: ['openFile', 'multiSelections']
+            properties: ['openFile', 'multiSelections'],
+            title: 'Select custom components',
+            buttonLabel: 'Select custom components'
         });
         return filePaths && [...filePaths];
     }
