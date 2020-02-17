@@ -1,6 +1,6 @@
 # FormBuilder
 
-FormBuilder is standalone designer for forms in [FormIO](https://www.form.io/) formate. Main features are: using [FormIO](https://www.form.io/) designer for creating forms and supporting custom components. FormioBuilder does not require any prerequisites installed on your computer.
+FormBuilder is standalone designer for forms in [FormIO](https://www.form.io/) format. Main features are: using [FormIO](https://www.form.io/) designer for creating forms and supporting custom components. FormioBuilder does not require any prerequisites installed on your computer.
 
 ![FormioBuilderPreview](./FormioBuilderPreview.png)
 

@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron');
 const $ = require('jquery');
-const initJQueryNotify = require('../../libs/notify');
+const initJQueryNotify = require('../../../libs/notify');
 const FormioFacade = require('./formioFacade');
 const JsonViewerFacade = require('./jsonViewerFacade');
 const { SAVED_MESSAGE } = require('../../constants/clientConstants')
