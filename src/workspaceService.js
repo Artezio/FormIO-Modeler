@@ -100,20 +100,28 @@ class WorkspaceService {
     }
 
     _pullOutFormsFromByPath(dirPath, forms) {
-        const fileBaseNames = fs.readdirSync(dirPath);
-        fileBaseNames.forEach(fileBaseName => {
-            if (path.extname(fileBaseName) === '.json') {
-                try {
-                    let form = fs.readFileSync(path.resolve(dirPath, fileBaseName), { encoding: 'utf8' });
-                    form = JSON.parse(form);
-                    forms.push(form);
-                } catch (err) {
-                    console.info(err);
+        try {
+            const fileBaseNames = fs.readdirSync(dirPath);
+            fileBaseNames.forEach(fileBaseName => {
+                if (path.extname(fileBaseName) === '.json') {
+                    try {
+                        let form = fs.readFileSync(path.resolve(dirPath, fileBaseName), { encoding: 'utf8' });
+                        form = JSON.parse(form);
+                        forms.push(form);
+                    } catch (err) {
+                        console.info(err);
+                    }
+                } else {
+                    const stats = fs.lstatSync(path.resolve(dirPath, fileBaseName));
+                    if (stats.isDirectory()) {
+                        this._pullOutFormsFromByPath(path.resolve(dirPath, fileBaseName), forms);
+                    }
                 }
-            } else if (path.extname(fileBaseName) === '') {
-                this._pullOutFormsFromByPath(path.resolve(dirPath, fileBaseName), forms);
-            }
-        })
+            })
+        } catch (err) {
+            console.info(err);
+            return;
+        }
     }
 
     throwError(message) {

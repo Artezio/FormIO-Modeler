@@ -105,26 +105,29 @@ function setCurrentWorkspaceEndHandler(event, result) {
 }
 
 function getFormsEndHandler(event, result = {}) {
+    let forms;
     if (!result.error) {
-        title.textContent = currentWorkspace;
-        const forms = result.payload;
-        clearNode(contentContainer);
-        if (forms.length) {
-            const formsList = createList(forms.map(form => {
-                const title = `${form.path} (${form.title})`;
-                return {
-                    title,
-                    callback: () => loadForm(form)
-                }
-            }));
-            contentContainer.append(createColumn('col-auto', 'Forms', formsList));
-        }
-        const commandsList = createList([{
-            title: 'Create new form',
-            callback: () => openNewForm()
-        }])
-        contentContainer.append(createColumn('col', 'Start', commandsList));
+        forms = result.payload;
+    } else {
+        forms = [];
     }
+    title.textContent = currentWorkspace;
+    clearNode(contentContainer);
+    if (forms.length) {
+        const formsList = createList(forms.map(form => {
+            const title = `${form.path} (${form.title})`;
+            return {
+                title,
+                callback: () => loadForm(form)
+            }
+        }));
+        contentContainer.append(createColumn('col-auto', 'Forms', formsList));
+    }
+    const commandsList = createList([{
+        title: 'Create new form',
+        callback: () => openNewForm()
+    }])
+    contentContainer.append(createColumn('col', 'Start', commandsList));
 }
 
 function attachLoaderEndHandler() {
