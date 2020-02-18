@@ -62,19 +62,22 @@ class Backend {
             this.throwError(NOT_VALID_FORM);
         }
         const formExists = this.workspaceService.formExistsByPathField(form.path);
+        function save() {
+            form.created = form.created || new Date().toISOString();
+            form.modified = new Date().toISOString();
+            this.workspaceService.saveForm(form);
+            this.appState.formSaved = true;
+            this.clientChanel.send('saveCurrentForm');
+        }
         if (formExists) {
             const canReplace = this.dialog.confirmReplaceFile();
             if (canReplace) {
-                this.workspaceService.saveForm(form);
-                this.appState.formSaved = true;
-                this.clientChanel.send('saveCurrentForm');
+                save()
             } else {
                 this.throwError('Action canceled');
             }
         } else {
-            this.workspaceService.saveForm(form);
-            this.appState.formSaved = true;
-            this.clientChanel.send('saveCurrentForm');
+            save()
         }
     }
 
