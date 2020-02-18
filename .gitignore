@@ -3,6 +3,6 @@ dist/
 node_modules/
 thumbs.db
 .idea/
-data/lastWorkspace.txt
 saves
-**/recentWorkspaces.txt
+recentWorkspaces.txt
+yarn.log

@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const uuid = require('uuid/v1');
 const { PATH_TO_WORKSPACES_INFO, MAX_RECENT_WORKSPACES, FORM_TYPE } = require('./constants/backendConstants');
 
@@ -53,6 +54,9 @@ class AppState {
     saveRecentWorkspaces() {
         const data = JSON.stringify(this.recentWorkspaces);
         try {
+            if (!fs.existsSync(path.dirname(PATH_TO_WORKSPACES_INFO))) {
+                fs.mkdirSync(path.dirname(PATH_TO_WORKSPACES_INFO), { recursive: true });
+            }
             fs.writeFileSync(PATH_TO_WORKSPACES_INFO, data, { encoding: 'utf8' });
         } catch (err) {
             console.error(err);

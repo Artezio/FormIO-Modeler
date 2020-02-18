@@ -10,6 +10,9 @@
         "windows": {
           "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
         },
+        "env": {
+          "NODE_PATH": "D:\\Works\\formio-electron\\node_modules"
+        },
         "args" : ["."],
         "outputCapture": "std"
       }

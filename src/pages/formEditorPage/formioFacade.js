@@ -1,6 +1,8 @@
 const { Formio } = require('formiojs');
 const clearNode = require('../../util/clearNode');
 
+const BaseComponent = Formio.Components.components.base;
+
 class FormioFacade {
     constructor(builderContainer, formContainer, options = {}) {
         this.onSchemaChanged = options.onSchemaChanged;
@@ -58,21 +60,24 @@ class FormioFacade {
         Formio.makeRequest = _overrideFormioRequest(Formio.makeRequest);
     }
 
-    registerComponent(componentDetails = {}) {
+    _registerComponent(componentDetails = {}) {
         const { name, path } = componentDetails;
         try {
             if (!name) throw new Error('No name for custom component provided');
-            const customComponent = require(path);
-            Formio.registerComponent(name, customComponent);
+            const CustomComponent = require(path);
+            if (!CustomComponent || !(CustomComponent.prototype instanceof BaseComponent)) {
+                throw new Error('Not valid custom component');
+            }
+            Formio.registerComponent(name, CustomComponent);
             this.customComponentNames.add(name);
         } catch (err) {
-            console.error(err);
+            console.info(err);
         }
     }
 
     registerComponents(componentsDetails) {
         if (Array.isArray(componentsDetails)) {
-            componentsDetails.forEach(componentDetails => this.registerComponent(componentDetails));
+            componentsDetails.forEach(componentDetails => this._registerComponent(componentDetails));
         }
     }
 
