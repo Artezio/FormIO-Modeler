@@ -14,6 +14,7 @@ const $viewDataTabLink = $(document.getElementById('view-data-tab'));
 const jsonContainer = document.getElementById('viewData');
 const builderContainer = document.getElementById('builder');
 const formContainer = document.getElementById('preview');
+const toolBar = document.getElementById('toolbar');
 const loader = getLoader();
 
 const formioFacade = new FormioFacade(builderContainer, formContainer, {
@@ -28,11 +29,21 @@ const jsonViewerFacade = new JsonViewerFacade(jsonContainer);
 function run() {
     const unsubscribe = subscribeOnEvents();
     detailsForm.addEventListener('input', changeFormDetailsHandler);
+    toolBar.children['openNewForm'].addEventListener('click', openNewForm);
+    toolBar.children['openForm'].addEventListener('click', openForm);
+    toolBar.children['saveCurrentForm'].addEventListener('click', saveCurrentForm);
+    toolBar.children['changeCurrentWorkspace'].addEventListener('click', changeCurrentWorkspace);
+    toolBar.children['registerCustomComponents'].addEventListener('click', registerCustomComponents);
     detailsForm.onsubmit = e => e.preventDefault();
     document.addEventListener('unload', () => {
         unsubscribe();
         formioFacade.unsubscribe();
         detailsForm.removeEventListener('input', changeFormDetailsHandler);
+        toolBar.children['openNewForm'].removeEventListener('click', openNewForm);
+        toolBar.children['openForm'].removeEventListener('click', openForm);
+        toolBar.children['saveCurrentForm'].removeEventListener('click', saveCurrentForm);
+        toolBar.children['changeCurrentWorkspace'].removeEventListener('click', changeCurrentWorkspace);
+        toolBar.children['registerCustomComponents'].removeEventListener('click', registerCustomComponents);
     });
     loadCustomComponentsDetails();
 }
