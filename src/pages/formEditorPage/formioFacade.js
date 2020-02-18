@@ -1,5 +1,13 @@
 const { Formio } = require('formiojs');
+const path = require('path');
 const clearNode = require('../../util/clearNode');
+const $ = require('jquery');
+const initJQueryNotify = require('../../../libs/notify');
+const isComponent = require('../../util/isComponent');
+
+if (!$.notify) {
+    initJQueryNotify();
+}
 
 const BaseComponent = Formio.Components.components.base;
 
@@ -65,19 +73,26 @@ class FormioFacade {
         try {
             if (!name) throw new Error('No name for custom component provided');
             const CustomComponent = require(path);
-            if (!CustomComponent || !(CustomComponent.prototype instanceof BaseComponent)) {
+            if (!isComponent(CustomComponent)) {
                 throw new Error('Not valid custom component');
             }
             Formio.registerComponent(name, CustomComponent);
             this.customComponentNames.add(name);
+            return true;
         } catch (err) {
             console.info(err);
+            return false;
         }
     }
 
     registerComponents(componentsDetails) {
-        if (Array.isArray(componentsDetails)) {
-            componentsDetails.forEach(componentDetails => this._registerComponent(componentDetails));
+        const registeredComponents = componentsDetails.filter(componentDetails => this._registerComponent(componentDetails));
+        if (registeredComponents.length !== componentsDetails.length) {
+            componentsDetails.forEach(componentDetails => {
+                if (!registeredComponents.some(component => component.path === componentDetails.path)) {
+                    $.notify(`${path.basename(componentDetails.path)} is not valid!`);
+                }
+            })
         }
     }
 

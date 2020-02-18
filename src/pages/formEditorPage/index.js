@@ -140,7 +140,9 @@ function submitHandler(submission = {}) {
 function getCustomComponentsDetailsEndHandler(event, response = {}) {
     if (!response.error) {
         const customComponentsDetails = response.payload;
-        formioFacade.registerComponents(customComponentsDetails);
+        if (Array.isArray(customComponentsDetails)) {
+            formioFacade.registerComponents(customComponentsDetails);
+        }
     }
     loadForm();
 }

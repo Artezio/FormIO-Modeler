@@ -3,6 +3,7 @@ const AppState = require('./appState');
 const path = require('path');
 const { CONFIRM_CONSTANTS, NOT_VALID_FORM } = require('./constants/backendConstants');
 const isForm = require('./util/isForm');
+const isComponent = require('./util/isComponent');
 
 class Backend {
     constructor(dialog, clientChanel) {
@@ -128,25 +129,42 @@ class Backend {
     registerCustomComponents() {
         const componentPaths = this.dialog.selectJsFiles();
         if (!componentPaths) this.throwError('Action canceled');
+        let currentCustomComponentsDetails;
         try {
-            let currentCustomComponentsDetails;
+            currentCustomComponentsDetails = this.workspaceService.getCustomComponentsDetails();
+        } catch (err) {
+            currentCustomComponentsDetails = [];
+        }
+        const tryRegisterComponent = (componentPath) => {
             try {
-                currentCustomComponentsDetails = this.workspaceService.getCustomComponentsDetails();
-            } catch (err) {
-                currentCustomComponentsDetails = [];
-            }
-            const replacedComponents = componentPaths.filter(componentPath => {
-                const componentName = path.basename(componentPath).slice(0, -path.extname(componentPath).length);
-                if (currentCustomComponentsDetails.some(componentDetails => componentDetails.name === componentName)) {
-                    const canReplace = this.dialog.confirmReplaceFile(componentName);
-                    if (!canReplace) return false;
+                const Component = require(componentPath);
+                if (!isComponent(Component)) {
+                    throw new Error(`${path.basename(componentPath)} is not valid!`);
                 }
                 this.workspaceService.addCustomComponent(componentPath);
                 return true;
+            } catch (err) {
+                this.dialog.alert(err.toString());
+                return false;
+            }
+        }
+        const isDuplicatedFiles = currentCustomComponentsDetails.some(componentDetails => {
+            return componentPaths.some(componentPath => path.basename(componentDetails.path) === path.basename(componentPath));
+        })
+        if (isDuplicatedFiles) {
+            const replacedComponents = componentPaths.filter(componentPath => {
+                const isDuplicated = currentCustomComponentsDetails.some(componentDetails => path.basename(componentDetails.path) === path.basename(componentPath));
+                if (isDuplicated) {
+                    const canReplace = this.dialog.confirmReplaceFile(path.basename(componentPath));
+                    if (!canReplace) return false;
+                }
+                return tryRegisterComponent(componentPath);
             })
-            if (!replacedComponents.length) this.throwError('Action canceled');
-        } catch (err) {
-            this.throwError(err);
+            if (!replacedComponents.length) {
+                this.throwError('Action canceled');
+            }
+        } else {
+            componentPaths.forEach(componentPath => tryRegisterComponent(componentPath));
         }
     }
 
