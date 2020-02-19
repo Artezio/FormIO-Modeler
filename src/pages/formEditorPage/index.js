@@ -19,7 +19,6 @@ const toolBar = document.getElementById('toolbar');
 const labelArtezioLink = document.getElementById('label-artezio-link');
 const advertizingModalWrapper = document.getElementById('advertizing-modal');
 const advertizingModal = document.getElementById('modal');
-const artezioLinks = advertizingModal.querySelectorAll('a');
 const loader = getLoader();
 
 let modalRemoverTimerId;
@@ -33,13 +32,11 @@ const formioFacade = new FormioFacade(builderContainer, formContainer, {
 });
 const jsonViewerFacade = new JsonViewerFacade(jsonContainer);
 
-artezioLinks.forEach(link => {
-    link.onclick = e => {
-        e.preventDefault();
-        const link = e.target.href;
-        shell.openExternal(link);
-    }
-})
+$('body').on('click', 'a', (event) => {
+    event.preventDefault();
+    let link = event.target.href;
+    shell.openExternal(link);
+});
 
 function run() {
     const unsubscribe = subscribeOnEvents();
