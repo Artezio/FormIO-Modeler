@@ -63,7 +63,7 @@ class Backend {
             this.throwError(NOT_VALID_FORM);
         }
         const formExists = this.workspaceService.formExistsByPathField(form.path);
-        function save() {
+        const save = () => {
             form.created = form.created || new Date().toISOString();
             form.modified = new Date().toISOString();
             this.workspaceService.saveForm(form);
