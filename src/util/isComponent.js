@@ -1,6 +1,8 @@
 if (!global.window) {
     const initJsdomGlobal = require('jsdom-global');
-    initJsdomGlobal();
+    initJsdomGlobal(undefined, {
+        url: "http://localhost:3000"
+    });
     global.Option = global.window.Option;
     global.window.matchMedia = function (media) {
         return {
