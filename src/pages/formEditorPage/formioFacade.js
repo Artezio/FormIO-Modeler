@@ -8,9 +8,6 @@ const isComponent = require('../../util/isComponent');
 if (!$.notify) {
     initJQueryNotify();
 }
-
-const BaseComponent = Formio.Components.components.base;
-
 class FormioFacade {
     constructor(builderContainer, formContainer, options = {}) {
         this.onSchemaChanged = options.onSchemaChanged;

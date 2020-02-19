@@ -1,4 +1,5 @@
 const { ipcRenderer } = require('electron');
+const path = require('path');
 const $ = require('jquery');
 const initJQueryNotify = require('../../../libs/notify');
 const FormioFacade = require('./formioFacade');
@@ -45,7 +46,8 @@ function run() {
         toolBar.children['changeCurrentWorkspace'].removeEventListener('click', changeCurrentWorkspace);
         toolBar.children['registerCustomComponents'].removeEventListener('click', registerCustomComponents);
     });
-    loadCustomComponentsDetails();
+
+    getCurrentWorkspace();
 }
 
 function openNewForm() {
@@ -70,6 +72,10 @@ function registerCustomComponents() {
 
 function changeFormDetailsHandler() {
     adjustForm();
+}
+
+function getCurrentWorkspace() {
+    ipcRenderer.send('getCurrentWorkspace.start');
 }
 
 function getActiveFormPath() {
@@ -183,6 +189,17 @@ function detachLoaderEndHandler() {
     document.body.removeChild(loader);
 }
 
+function getCurrentWorkspaceEndHandler(event, result = {}) {
+    if (!result.error) {
+        const workspace = result.payload;
+        const base = document.createElement('base');
+        base.href = workspace + path.sep;
+        document.head.append(base);
+    }
+
+    loadCustomComponentsDetails();
+}
+
 function subscribeOnEvents() {
     ipcRenderer.on('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
     ipcRenderer.on('getCurrentForm.end', getCurrentFormEndHandler);
@@ -190,6 +207,7 @@ function subscribeOnEvents() {
     ipcRenderer.on('focusFieldByName.end', focusFieldByNameEndHandler);
     ipcRenderer.on('attachLoader.end', attachLoaderEndHandler);
     ipcRenderer.on('detachLoader.end', detachLoaderEndHandler);
+    ipcRenderer.on('getCurrentWorkspace.end', getCurrentWorkspaceEndHandler);
 
     return function () {
         ipcRenderer.off('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
@@ -198,6 +216,7 @@ function subscribeOnEvents() {
         ipcRenderer.off('focusFieldByName.end', focusFieldByNameEndHandler);
         ipcRenderer.off('attachLoader.end', attachLoaderEndHandler);
         ipcRenderer.off('detachLoader.end', detachLoaderEndHandler);
+        ipcRenderer.off('getCurrentWorkspace.end', getCurrentWorkspaceEndHandler);
     }
 }
 
