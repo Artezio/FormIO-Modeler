@@ -6,15 +6,13 @@ FormBuilder is standalone designer for forms in [FormIO](https://www.form.io/) f
 
 # Installation
 
-1) Installers are in ["releases" section](https://github.com/Artezio/FormIO-editor/releases). 
-
-Application will be installed automatically to default programs folder on your computer and then launched. Shortcut will be added to you desktop.
+1) Installers are in ["releases" section](https://github.com/Artezio/FormIO-editor/releases).
 
 # Usage
 
-FormBuilder works with workspaces(directories). To save form click appropriate button in toolbar or in menu, form will be saved in workspace. File name will be the same as "path" field, separators ("\\" or "/") in path field will indicate on subfolders within workspace.
+FormBuilder works with workspaces(directories). To save form click appropriate button in toolbar or in menu, form will be saved in workspace. File name will be the same as "path" field, separators ("\\" or "/", according to OS) in path field will indicate on subfolders within workspace.
 
-You can register custom components, written in accordance with [FormIO rules](https://github.com/formio/formio.js/wiki/Custom-Components-API), by appropriate button in toolbar/menu. Select one or multiple custom component(s) in dialog window. They will be instantly added to form designer and saved in workspace for future using. You can add them manually creating folder "custom-components" in workspace and putting custom components there. If you add them manually you have to restart application or reopen workspace to apply them.
+You can register custom components, written in accordance with [FormIO rules](https://github.com/formio/formio.js/wiki/Custom-Components-API), by appropriate button in toolbar/menu. Select one or multiple custom component(s) in dialog window. They will be instantly added to form designer and saved in workspace for future using. You can add them manually creating folder "custom-components" in workspace and putting custom components there. If you add them manually you have to restart application or reopen workspace to apply them. FormioBuilder tries to apply custom components every time you open form, if some files in custom-components folder are not valid, you will be informed by notification in the top right conner.
 
 # Creating custom components
 
@@ -26,28 +24,16 @@ You can register custom components, written in accordance with [FormIO rules](ht
 ### Requirements
 
 * You must use commonjs module style.
-* When importing formiojs modules you must import them as default .
+* If you use third party libraries, you must bundle them and your component in one file.
+* You must not neither include formiojs in you bundle, nor remain imports of the library in the file. "Formio" global variable will be presented in working environment, so you must use it for inheritance purpose.
+
+### Example of using base Component
 ```js
-const Component = require('formiojs/components/_classes/component/Component').default;
-```
-* If you use third party libraries you must bundle they and your component in one file.
-* You must not include formiojs into you bundle.
+const Component = Formio.Components.components.base;
 
-### Example of webpack-config for bundling third party libraries via webpack
-
-```js
-const path = require('path');
-
-module.exports = {
-    entry: './TextEditor.js',
-    output: {
-        path: path.resolve(__dirname, './testDist'),
-        filename: 'texteditor.js',
-        libraryTarget: 'umd',
-        library: 'TextEditor',
-    },
-    externals: {
-        formiojs: "formiojs"
-    }
+class CustomComponent extends Component {
+    //...
 }
+
+module.exports = CustomComponent;
 ```
