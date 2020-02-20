@@ -1,4 +1,5 @@
 const { CONFIRM_CONSTANTS } = require('./constants/backendConstants');
+const fs = require('fs');
 
 class ElectronDialog {
     constructor(dialog, window) {
@@ -83,7 +84,13 @@ class ElectronDialog {
             title: 'Select current workspace',
             buttonLabel: 'Select workspace'
         })
-        return paths && paths[0];
+        const aimPath = paths && paths[0];
+        if (!aimPath) return;
+        if (!fs.existsSync(aimPath)) {
+            this.alert(`the path "${aimPath}" does not seem to exist anymore on disk`);
+            return;
+        }
+        return aimPath;
     }
 
     selectJsonFile() {
@@ -95,7 +102,10 @@ class ElectronDialog {
             title: 'Open form',
             buttonLabel: 'Open form'
         });
-        return filePaths && filePaths[0];
+        const aimPath = paths && paths[0];
+        if (aimPath) {
+            return aimPath;
+        }
     }
 
     selectJsFiles() {
