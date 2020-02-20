@@ -29,6 +29,11 @@
   "build": {
     "appId": "formio.builder.id",
     "productName": "FormBuilder",
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "license": "./LICENSE-2.0.txt"
+    },
     "win": {
       "target": "nsis",
       "icon": "data/icons/win/icon.ico"
