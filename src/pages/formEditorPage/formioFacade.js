@@ -66,13 +66,13 @@ class FormioFacade {
     }
 
     _registerComponent(componentDetails = {}) {
-        const { name, path } = componentDetails;
+        const { path } = componentDetails;
         try {
-            if (!name) throw new Error('No name for custom component provided');
             const CustomComponent = require(path);
             if (!isComponent(CustomComponent)) {
                 throw new Error('Not valid custom component');
             }
+            const name = CustomComponent.schema().type;
             Formio.registerComponent(name, CustomComponent);
             this.customComponentNames.add(name);
             return true;
