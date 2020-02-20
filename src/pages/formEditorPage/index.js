@@ -19,6 +19,13 @@ const toolBar = document.getElementById('toolbar');
 const labelArtezioLink = document.getElementById('label-artezio-link');
 const advertizingModalWrapper = document.getElementById('advertizing-modal');
 const advertizingModal = document.getElementById('modal');
+const toolBarButtons = {
+    saveCurrentForm: toolBar.children['saveCurrentForm'],
+    openNewForm: toolBar.children['openNewForm'],
+    openForm: toolBar.children['openForm'],
+    changeCurrentWorkspace: toolBar.children['changeCurrentWorkspace'],
+    registerCustomComponents: toolBar.children['registerCustomComponents']
+}
 const loader = getLoader();
 
 let modalRemoverTimerId;
@@ -41,22 +48,22 @@ $('body').on('click', 'a', (event) => {
 function run() {
     const unsubscribe = subscribeOnEvents();
     detailsForm.addEventListener('input', changeFormDetailsHandler);
-    toolBar.children['openNewForm'].addEventListener('click', openNewForm);
-    toolBar.children['openForm'].addEventListener('click', openForm);
-    toolBar.children['saveCurrentForm'].addEventListener('click', saveCurrentForm);
-    toolBar.children['changeCurrentWorkspace'].addEventListener('click', changeCurrentWorkspace);
-    toolBar.children['registerCustomComponents'].addEventListener('click', registerCustomComponents);
+    toolBarButtons.openNewForm.addEventListener('click', openNewForm);
+    toolBarButtons.openForm.addEventListener('click', openForm);
+    toolBarButtons.saveCurrentForm.addEventListener('click', saveCurrentForm);
+    toolBarButtons.changeCurrentWorkspace.addEventListener('click', changeCurrentWorkspace);
+    toolBarButtons.registerCustomComponents.addEventListener('click', registerCustomComponents);
     labelArtezioLink.addEventListener('click', attachAdvertisingModal);
     detailsForm.onsubmit = e => e.preventDefault();
     document.addEventListener('unload', () => {
         unsubscribe();
         formioFacade.unsubscribe();
         detailsForm.removeEventListener('input', changeFormDetailsHandler);
-        toolBar.children['openNewForm'].removeEventListener('click', openNewForm);
-        toolBar.children['openForm'].removeEventListener('click', openForm);
-        toolBar.children['saveCurrentForm'].removeEventListener('click', saveCurrentForm);
-        toolBar.children['changeCurrentWorkspace'].removeEventListener('click', changeCurrentWorkspace);
-        toolBar.children['registerCustomComponents'].removeEventListener('click', registerCustomComponents);
+        toolBarButtons.openNewForm.removeEventListener('click', openNewForm);
+        toolBarButtons.openForm.removeEventListener('click', openForm);
+        toolBarButtons.saveCurrentForm.removeEventListener('click', saveCurrentForm);
+        toolBarButtons.changeCurrentWorkspace.removeEventListener('click', changeCurrentWorkspace);
+        toolBarButtons.registerCustomComponents.removeEventListener('click', registerCustomComponents);
         labelArtezioLink.removeEventListener('click', attachAdvertisingModal);
     });
 
@@ -157,6 +164,15 @@ function getForms() {
 function adjustForm(schema = {}) {
     const form = { ...schema, ...getFormDetails() };
     ipcRenderer.send('adjustForm.start', { payload: form });
+    enableSaveButton();
+}
+
+function enableSaveButton() {
+    toolBarButtons.saveCurrentForm.disabled = false;
+}
+
+function disableSaveButton() {
+    toolBarButtons.saveCurrentForm.disabled = true;
 }
 
 function loadCustomComponentsDetails() {
@@ -208,6 +224,7 @@ function setFormDetails(form = {}) {
 function saveCurrentFormEndHandler(event, result = {}) {
     if (!result.error) {
         $.notify(SAVED_MESSAGE, 'success');
+        disableSaveButton();
     }
 }
 
