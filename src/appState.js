@@ -8,8 +8,23 @@ class AppState {
         this.workspaceService = workspaceService;
         this.recentWorkspaces = [];
         this.form = {};
-        this.formSaved = true;
+        this._formSaved = true;
         this._init();
+    }
+
+    get formSaved() {
+        return this._formSaved;
+    }
+
+    set formSaved(formSaved) {
+        if (formSaved) {
+            this.currentFormPath = this.form.path;
+        }
+        this._formSaved = formSaved;
+    }
+
+    get needReplaceForm() {
+        return !this.form.path || this.currentFormPath !== this.form.path;
     }
 
     addRecentWorkspace(workspace) {
@@ -63,9 +78,10 @@ class AppState {
         }
     }
 
-    setForm(form) {
+    setForm(form = {}) {
         this.form = form;
         this.formSaved = true;
+        this.currentFormPath = this.form.path;
     }
 
     adjustForm(changes = {}) {

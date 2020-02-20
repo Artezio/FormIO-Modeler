@@ -70,7 +70,7 @@ class Backend {
             this.appState.formSaved = true;
             this.clientChanel.send('saveCurrentForm');
         }
-        if (formExists) {
+        if (formExists && this.appState.needReplaceForm) {
             const canReplace = this.dialog.confirmReplaceFile(form.path + '.json');
             if (canReplace) {
                 save()
