@@ -138,7 +138,7 @@ class Backend {
         const tryRegisterComponent = (componentPath) => {
             try {
                 const Component = require(componentPath);
-                if (!isComponent(Component)) {
+                if (!isComponent(Component, path.parse(componentPath).name)) {
                     throw new Error(`${path.basename(componentPath)} is not valid!`);
                 }
                 this.workspaceService.addCustomComponent(componentPath);

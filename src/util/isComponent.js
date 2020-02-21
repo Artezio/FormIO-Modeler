@@ -15,6 +15,6 @@ const Formio = require('formiojs');
 
 const BaseComponent = Formio.Components.components.base;
 
-module.exports = function isComponent(Component) {
-    return !!Component && typeof Component.schema === 'function' && !!Component.schema().type && Component.prototype instanceof BaseComponent;
+module.exports = function isComponent(Component, name) {
+    return !!Component && !!name && typeof Component.schema === 'function' && Component.schema().type === name && Component.prototype instanceof BaseComponent;
 }
