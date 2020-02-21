@@ -24,6 +24,7 @@ You can register custom components, written in accordance with [FormIO rules](ht
 ### Requirements
 
 * You must use commonjs module style.
+* File name must be the same as component type.
 * If you use third party libraries, you must bundle them and your component in one file.
 * You must not neither include formiojs in you bundle, nor remain imports of the library in the file. "Formio" global variable will be presented in working environment, so you must use it for inheritance purpose.
 
