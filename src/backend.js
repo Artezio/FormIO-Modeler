@@ -164,7 +164,7 @@ class Backend {
                 this.throwError('Action canceled');
             }
         } else {
-            const replacedComponents = componentPaths.forEach(componentPath => tryRegisterComponent(componentPath));
+            const replacedComponents = componentPaths.filter(componentPath => tryRegisterComponent(componentPath));
             if (!replacedComponents.length) {
                 this.throwError('Action canceled');
             }
