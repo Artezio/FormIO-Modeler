@@ -11,6 +11,8 @@ let backend;
 let mainWindow;
 let unsubscribe;
 
+let formBuilderPageOpened = false;
+
 function prepareApp() {
     app.on('ready', () => {
         run();
@@ -71,11 +73,13 @@ function showPage(path) {
 
 function showStartPage() {
     clientChanel.send('attachLoader');
+    formBuilderPageOpened = false;
     return showPage(PATH_TO_START_PAGE);
 }
 
 function showFormEditorPage() {
     clientChanel.send('attachLoader');
+    formBuilderPageOpened = true;
     return showPage(PATH_TO_FORM_EDITOR_PAGE);
 }
 
@@ -147,7 +151,9 @@ function toggleDevTools(item, focusedWindow) {
 function registerCustomComponentsHandler() {
     try {
         backend.registerCustomComponents();
-        showFormEditorPage();
+        if (formBuilderPageOpened) {
+            showFormEditorPage();
+        }
     } catch (err) {
         clientChanel.sendError('registerCustomComponents', err);
     }

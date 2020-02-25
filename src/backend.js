@@ -23,7 +23,7 @@ class Backend {
     }
 
     openForm() {
-        this.closeCurrentForm(() => this.dialog.selectJsonFile());
+        this.closeCurrentForm(() => this.dialog.confirmOpenNewForm());
         const formPath = this.dialog.selectJsonFile();
         if (!formPath) {
             this.throwError('Action canceled');
@@ -169,6 +169,7 @@ class Backend {
                 this.throwError('Action canceled');
             }
         }
+        this.dialog.alert('Registered successfully!');
     }
 
     getFormById(id) {

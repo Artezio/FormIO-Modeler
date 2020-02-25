@@ -102,7 +102,7 @@ class ElectronDialog {
             title: 'Open form',
             buttonLabel: 'Open form'
         });
-        const aimPath = paths && paths[0];
+        const aimPath = filePaths && filePaths[0];
         if (aimPath) {
             return aimPath;
         }
