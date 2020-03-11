@@ -28,8 +28,14 @@ class Backend {
         if (!formPath) {
             this.throwError('Action canceled');
         }
-        const form = this.workspaceService.getForm(formPath);
-        this.appState.setForm(form);
+        try {
+            const form = this.workspaceService.getFormByPath(formPath);
+            this.appState.setForm(form);
+        } catch (err) {
+            const formName = path.basename(formPath);
+            this.dialog.alert(`${formName} is not valid form.`)
+            this.throwError(err);
+        }
     }
 
     openNewForm() {
