@@ -99,6 +99,9 @@ class FormioFacade {
                 this.builder.on('render', () => {
                     this.onSchemaChanged(this.builder.schema);
                 });
+                this.builder.on('change', () => {
+                    this.onSchemaChanged(this.builder.schema);
+                });
             }
         })
     }
@@ -117,7 +120,7 @@ class FormioFacade {
     }
 
     detachBuilder() {
-        this._unsubscribeRender();
+        this._unsubscribeBuilderEvents();
         clearNode(this.builderContainer);
     }
 
@@ -127,12 +130,15 @@ class FormioFacade {
     }
 
     unsubscribe() {
-        this._unsubscribeRender();
+        this._unsubscribeBuilderEvents();
         this._unsubscribeSubmit();
     }
 
-    _unsubscribeRender() {
-        this.builder && this.builder.off('render');
+    _unsubscribeBuilderEvents() {
+        if (this.builder) {
+            this.builder.off('render');
+            this.builder.off('change');
+        }
     }
 
     _unsubscribeSubmit() {
