@@ -31,53 +31,82 @@
         </button>
     </div>
     <div class="container-fluid">
-        <div id="mainContentWrapper">
-            <ul class="nav nav-tabs small" id="formio-builder-tabs" role="tablist">
+        <div class="tab-links">
+            <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link active" id="edit-form-tab" data-toggle="tab" href="#editForm" role="tab"
-                        aria-controls="edit-form" aria-selected="true">Edit Form</a>
+                    <a href="javascript:void(0)" class="nav-link active">123</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="enter-data-tab" data-toggle="tab" href="#enterData" role="tab"
-                        aria-controls="enter-data" aria-selected="false">Enter Data</a>
+                    <a href="javascript:void(0)" class="nav-link">231</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="view-data-tab" data-toggle="tab" href="#viewData" role="tab"
-                        aria-controls="view-data" aria-selected="false">View Data</a>
+                    <a href="javascript:void(0)" class="nav-link">312</a>
                 </li>
             </ul>
-
-            <div class="tab-content p-3" id="formio-builder-content">
-                <div class="tab-pane fade show active" id="editForm" role="tabpanel" aria-labelledby="edit-form-tab">
-                    <form id="formDetails" name="formDetails">
-                        <div class="row">
-                            <div class="form-group d-flex align-items-center col-6">
-                                <label class="mr-3" for="formTitle">Title</label class="mr-3">
-                                <input class="form-control form-control-sm" type="text" name="title" id="formTitle"
-                                    placeholder="Enter the form title" required>
-                            </div>
-                            <div class="form-group d-flex align-items-center col-6">
-                                <label class="mr-3" for="formName">Name</label>
-                                <input class="form-control form-control-sm" type="text" name="name" id="formName"
-                                    placeholder="Enter the form name">
-                            </div>
+        </div>
+        <div class="tab">
+            <div class="tab__body">
+                <div class="tab-content" id="formio-builder-content">
+                    <div class="tab-pane tab-pane__form-details fade show active" id="editForm" role="tabpanel"
+                        aria-labelledby="edit-form-tab">
+                        <div class="form-details">
+                            <form id="formDetails" name="formDetails">
+                                <div class="row">
+                                    <div class="form-group d-flex align-items-center col-6">
+                                        <label class="mr-3" for="formTitle">Title</label class="mr-3">
+                                        <input class="form-control form-control-sm" type="text" name="title"
+                                            id="formTitle" placeholder="Enter the form title" required>
+                                    </div>
+                                    <div class="form-group d-flex align-items-center col-6">
+                                        <label class="mr-3" for="formName">Name</label>
+                                        <input class="form-control form-control-sm" type="text" name="name"
+                                            id="formName" placeholder="Enter the form name">
+                                    </div>
+                                </div>
+                                <div class="form-group d-flex align-items-center">
+                                    <label class="mr-3" for="formPath">Path</label>
+                                    <input class="form-control form-control-sm" type="text" name="path" id="formPath"
+                                        placeholder="Enter the form path" required>
+                                </div>
+                            </form>
                         </div>
-                        <div class="form-group d-flex align-items-center">
-                            <label class="mr-3" for="formPath">Path</label>
-                            <input class="form-control form-control-sm" type="text" name="path" id="formPath"
-                                placeholder="Enter the form path" required>
-                        </div>
-                    </form>
-                    <div id="builder"></div>
+                        <div id="builder"></div>
+                    </div>
+                    <div class="tab-pane fade" id="enterData" role="tabpanel" aria-labelledby="enter-data-tab">
+                        <div id="preview"></div>
+                    </div>
+                    <div class="tab-pane fade" id="viewData" role="tabpanel" aria-labelledby="view-data-tab">
+                        <p>No data submitted</p>
+                    </div>
                 </div>
-                <div class="tab-pane fade" id="enterData" role="tabpanel" aria-labelledby="enter-data-tab">
-                    <div id="preview"></div>
-                </div>
-                <div class="tab-pane fade" id="viewData" role="tabpanel" aria-labelledby="view-data-tab">
-                    <p>No data submitted</p>
+            </div>
+            <div class="tab__footer">
+                <div class="sheets">
+                    <nav class="nav nav-pills nav-fill" id="formio-builder-tabs" role="tablist">
+                        <a class="nav-item nav-link active" id="edit-form-tab" data-toggle="tab" href="#editForm"
+                            role="tab" aria-controls="edit-form" aria-selected="true">Edit Form</a>
+                        <a class="nav-item nav-link" id="enter-data-tab" data-toggle="tab" href="#enterData" role="tab"
+                            aria-controls="enter-data" aria-selected="false">Enter Data</a>
+                        <a class="nav-item nav-link" id="view-data-tab" data-toggle="tab" href="#viewData" role="tab"
+                            aria-controls="view-data" aria-selected="false">View Data</a>
+                    </nav>
                 </div>
             </div>
         </div>
+        <!-- <ul class="nav nav-tabs small" id="formio-builder-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="edit-form-tab" data-toggle="tab" href="#editForm" role="tab"
+                    aria-controls="edit-form" aria-selected="true">Edit Form</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="enter-data-tab" data-toggle="tab" href="#enterData" role="tab"
+                    aria-controls="enter-data" aria-selected="false">Enter Data</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="view-data-tab" data-toggle="tab" href="#viewData" role="tab"
+                    aria-controls="view-data" aria-selected="false">View Data</a>
+            </li>
+        </ul> -->
     </div>
     <div class="label-artezio">
         <a id="label-artezio-link" href="javascript:void(0)">

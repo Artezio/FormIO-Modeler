@@ -180,7 +180,7 @@ function loadCustomComponentsDetails() {
     ipcRenderer.send('getCustomComponentsDetails.start');
 }
 
-function loadForm() {
+function getCurrentForm() {
     ipcRenderer.send('getCurrentForm.start');
 }
 
@@ -203,7 +203,7 @@ function getCustomComponentsDetailsEndHandler(event, response = {}) {
             formioFacade.registerComponents(customComponentsDetails);
         }
     }
-    loadForm();
+    getCurrentForm();
 }
 
 function getCurrentFormEndHandler(event, response = {}) {

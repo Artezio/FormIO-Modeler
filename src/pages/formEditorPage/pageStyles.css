@@ -49,7 +49,7 @@ body {
 }
 
 .advertizing-modal-wrapper {
-  z-index: 1001;
+  z-index: 1005;
   position: fixed;
   top: 0;
   left: 0;
@@ -61,4 +61,52 @@ body {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.2);
+}
+
+#toolbar {
+  height: 41px;
+}
+
+.container-fluid {
+  padding-right: 30px;
+  height: calc(100% - 56px);
+}
+
+.tab {
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 42px);
+}
+
+.tab__body {
+  overflow: auto;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-top: none;
+  flex-grow: 1;
+}
+
+.tab__footer {
+  width: 400px;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-top: none;
+  padding: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.tab-pane {
+  padding: 1rem;
+}
+
+.tab-pane.tab-pane__form-details {
+  padding-top: 0;
+}
+
+.form-details {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1001;
+  background-color: white;
 }
