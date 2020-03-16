@@ -42,7 +42,7 @@ const jsonViewerFacade = new JsonViewerFacade(jsonContainer);
 $('body').on('click', 'a', (event) => {
     event.preventDefault();
     let link = event.target.href;
-    shell.openExternal(link);
+    link && shell.openExternal(link);
 });
 
 function run() {
