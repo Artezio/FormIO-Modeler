@@ -1,3 +1,5 @@
+require('bootstrap');
+initJQueryNotify();
 const { shell } = require('electron');
 const path = require('path');
 const $ = require('jquery');
@@ -7,14 +9,12 @@ const JsonViewerFacade = require('./jsonViewerFacade');
 const { SAVED_MESSAGE } = require('../../constants/clientConstants')
 const getLoader = require('../../util/getLoader');
 const BackendChanel = require('../../channels/backendChanel');
+const TabBar = require('./tabBar');
 
-const backendChanel = new BackendChanel();
-
-require('bootstrap');
-initJQueryNotify();
 
 const detailsForm = document.forms.formDetails;
 const $viewDataTabLink = $(document.getElementById('view-data-tab'));
+const $viewBuilderTabLink = $(document.getElementById('edit-form-tab'))
 const jsonContainer = document.getElementById('viewData');
 const builderContainer = document.getElementById('builder');
 const formContainer = document.getElementById('preview');
@@ -30,6 +30,9 @@ const toolBarButtons = {
     registerCustomComponents: toolBar.children['registerCustomComponents']
 }
 const loader = getLoader();
+
+const tabBar = new TabBar();
+const backendChanel = new BackendChanel();
 
 let modalRemoverTimerId;
 
@@ -179,12 +182,24 @@ function disableSaveButton() {
     toolBarButtons.saveCurrentForm.disabled = true;
 }
 
-function loadCustomComponentsDetails() {
+function getCustomComponentsDetails() {
     backendChanel.send('getCustomComponentsDetails');
 }
 
 function getCurrentForm() {
     backendChanel.send('getCurrentForm');
+}
+
+function getTabs() {
+    backendChanel.send('getTabs');
+}
+
+function showBuilder() {
+    $viewBuilderTabLink.tab('show');
+}
+
+function showData() {
+    $viewDataTabLink.tab('show');
 }
 
 function schemaChangedHandler(schema = {}) {
@@ -196,7 +211,7 @@ function schemaChangedHandler(schema = {}) {
 
 function submitHandler(submission = {}) {
     jsonViewerFacade.show(submission.data);
-    $viewDataTabLink.tab('show');
+    showData();
 }
 
 function getCustomComponentsDetailsHandler(event, response = {}) {
@@ -206,16 +221,27 @@ function getCustomComponentsDetailsHandler(event, response = {}) {
             formioFacade.registerComponents(customComponentsDetails);
         }
     }
+    getTabs();
+}
+
+function getTabsHandler(event, response = {}) {
+    if (response.error) return;
+    const tabs = response.tabs;
+    tabBar.setTabs(tabs);
+    getCurrentForm();
+}
+
+function switchTabHandler() {
     getCurrentForm();
 }
 
 function getCurrentFormHandler(event, response = {}) {
-    if (!response.error) {
-        const form = response.payload;
-        setFormDetails(form);
-        formioFacade.attachBuilder(form);
-        formioFacade.attachForm(form);
-    }
+    if (response.error) return;
+    const form = response.payload;
+    setFormDetails(form);
+    formioFacade.attachBuilder(form);
+    formioFacade.attachForm(form);
+    showBuilder();
 }
 
 function setFormDetails(form = {}) {
@@ -226,10 +252,9 @@ function setFormDetails(form = {}) {
 }
 
 function saveCurrentFormHandler(event, result = {}) {
-    if (!result.error) {
-        $.notify(SAVED_MESSAGE, 'success');
-        disableSaveButton();
-    }
+    if (result.error) return;
+    $.notify(SAVED_MESSAGE, 'success');
+    disableSaveButton();
 }
 
 function focusFieldByNameHandler(event, result = {}) {
@@ -254,7 +279,7 @@ function getCurrentWorkspaceHandler(event, result = {}) {
         document.head.append(base);
     }
 
-    loadCustomComponentsDetails();
+    getCustomComponentsDetails();
 }
 
 function subscribeOnEvents() {
@@ -265,6 +290,8 @@ function subscribeOnEvents() {
     backendChanel.on('attachLoader', attachLoaderHandler);
     backendChanel.on('detachLoader', detachLoaderHandler);
     backendChanel.on('getCurrentWorkspace', getCurrentWorkspaceHandler);
+    backendChanel.on('getTabs', getTabsHandler);
+    backendChanel.on('switchTab', switchTabHandler);
 
     return function () {
         backendChanel.off('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
@@ -274,6 +301,8 @@ function subscribeOnEvents() {
         backendChanel.off('attachLoader', attachLoaderHandler);
         backendChanel.off('detachLoader', detachLoaderHandler);
         backendChanel.off('getCurrentWorkspace', getCurrentWorkspaceHandler);
+        backendChanel.off('getTabs', getTabsHandler);
+        backendChanel.off('switchTab', switchTabHandler);
     }
 }
 
