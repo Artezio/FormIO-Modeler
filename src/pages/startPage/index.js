@@ -1,7 +1,8 @@
-const { ipcRenderer } = require('electron');
 const clearNode = require('../../util/clearNode');
 const getLoader = require('../../util/getLoader');
+const BackendChanel = require('../../channels/backendChanel');
 
+const backendChanel = new BackendChanel();
 const title = document.getElementById('title');
 const contentContainer = document.getElementById('content');
 const loader = getLoader();
@@ -29,34 +30,34 @@ function createList(list) {
 }
 
 function getCurrentWorkspace() {
-    ipcRenderer.send('getCurrentWorkspace.start');
+    backendChanel.send('getCurrentWorkspace');
 }
 
 function setCurrentWorkspace(path) {
-    ipcRenderer.send('setCurrentWorkspace.start', { payload: path });
+    backendChanel.send('setCurrentWorkspace', path);
 }
 
 function openNewWorkspace() {
-    ipcRenderer.send('changeCurrentWorkspace.start');
+    backendChanel.send('changeCurrentWorkspace');
 }
 
 function getRecentWorkspaces() {
-    ipcRenderer.send('getRecentWorkspaces.start');
+    backendChanel.send('getRecentWorkspaces');
 }
 
 function loadForm(form) {
-    ipcRenderer.send('setCurrentForm.start', { payload: form });
+    backendChanel.send('setCurrentForm', form);
 }
 
 function getForms() {
-    ipcRenderer.send('getForms.start');
+    backendChanel.send('getForms');
 }
 
 function openNewForm() {
-    ipcRenderer.send('openNewForm.start');
+    backendChanel.send('openNewForm');
 }
 
-function getCurrentWorkspaceEndHandler(event, result = {}) {
+function getCurrentWorkspaceHandler(event, result = {}) {
     if (!result.error) {
         currentWorkspace = result.payload;
         if (currentWorkspace) {
@@ -80,7 +81,7 @@ function createColumn(className, title, list) {
     return div;
 }
 
-function getRecentWorkspacesEndHandler(event, result = {}) {
+function getRecentWorkspacesHandler(event, result = {}) {
     if (!result.error) {
         const recentWorkspaces = result.payload;
         clearNode(contentContainer);
@@ -99,12 +100,12 @@ function getRecentWorkspacesEndHandler(event, result = {}) {
     }
 }
 
-function setCurrentWorkspaceEndHandler(event, result) {
+function setCurrentWorkspaceHandler(event, result) {
     currentWorkspace = result.payload;
     getForms();
 }
 
-function getFormsEndHandler(event, result = {}) {
+function getFormsHandler(event, result = {}) {
     let forms;
     if (!result.error) {
         forms = result.payload;
@@ -130,29 +131,29 @@ function getFormsEndHandler(event, result = {}) {
     contentContainer.append(createColumn('col', 'Start', commandsList));
 }
 
-function attachLoaderEndHandler() {
+function attachLoaderHandler() {
     document.body.append(loader);
 }
 
-function detachLoaderEndHandler() {
+function detachLoaderHandler() {
     document.body.removeChild(loader);
 }
 
 function subscribeOnMainStreamEvents() {
-    ipcRenderer.on('getRecentWorkspaces.end', getRecentWorkspacesEndHandler);
-    ipcRenderer.on('setCurrentWorkspace.end', setCurrentWorkspaceEndHandler);
-    ipcRenderer.on('getForms.end', getFormsEndHandler);
-    ipcRenderer.on('getCurrentWorkspace.end', getCurrentWorkspaceEndHandler);
-    ipcRenderer.on('attachLoader.end', attachLoaderEndHandler);
-    ipcRenderer.on('detachLoader.end', detachLoaderEndHandler);
+    backendChanel.on('getRecentWorkspaces', getRecentWorkspacesHandler);
+    backendChanel.on('setCurrentWorkspace', setCurrentWorkspaceHandler);
+    backendChanel.on('getForms', getFormsHandler);
+    backendChanel.on('getCurrentWorkspace', getCurrentWorkspaceHandler);
+    backendChanel.on('attachLoader', attachLoaderHandler);
+    backendChanel.on('detachLoader', detachLoaderHandler);
 
     return function () {
-        ipcRenderer.off('getRecentWorkspaces.end', getRecentWorkspacesEndHandler);
-        ipcRenderer.off('setCurrentWorkspace.end', setCurrentWorkspaceEndHandler);
-        ipcRenderer.off('getForms.end', getFormsEndHandler);
-        ipcRenderer.off('getCurrentWorkspace.end', getCurrentWorkspaceEndHandler);
-        ipcRenderer.off('attachLoader.end', attachLoaderEndHandler);
-        ipcRenderer.off('detachLoader.end', detachLoaderEndHandler);
+        backendChanel.off('getRecentWorkspaces', getRecentWorkspacesHandler);
+        backendChanel.off('setCurrentWorkspace', setCurrentWorkspaceHandler);
+        backendChanel.off('getForms', getFormsHandler);
+        backendChanel.off('getCurrentWorkspace', getCurrentWorkspaceHandler);
+        backendChanel.off('attachLoader', attachLoaderHandler);
+        backendChanel.off('detachLoader', detachLoaderHandler);
     }
 }
 

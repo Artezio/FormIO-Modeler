@@ -1,4 +1,4 @@
-const { ipcRenderer, shell } = require('electron');
+const { shell } = require('electron');
 const path = require('path');
 const $ = require('jquery');
 const initJQueryNotify = require('../../../libs/notify');
@@ -6,6 +6,9 @@ const FormioFacade = require('./formioFacade');
 const JsonViewerFacade = require('./jsonViewerFacade');
 const { SAVED_MESSAGE } = require('../../constants/clientConstants')
 const getLoader = require('../../util/getLoader');
+const BackendChanel = require('../../channels/backendChanel');
+
+const backendChanel = new BackendChanel();
 
 require('bootstrap');
 initJQueryNotify();
@@ -95,23 +98,23 @@ function detachAdvertizingModal(e) {
 }
 
 function openNewForm() {
-    ipcRenderer.send('openNewForm.start');
+    backendChanel.send('openNewForm');
 }
 
 function openForm() {
-    ipcRenderer.send('openForm.start');
+    backendChanel.send('openForm');
 }
 
 function saveCurrentForm() {
-    ipcRenderer.send('saveCurrentForm.start');
+    backendChanel.send('saveCurrentForm');
 }
 
 function changeCurrentWorkspace() {
-    ipcRenderer.send('changeCurrentWorkspace.start');
+    backendChanel.send('changeCurrentWorkspace');
 }
 
 function registerCustomComponents() {
-    ipcRenderer.send('registerCustomComponents.start');
+    backendChanel.send('registerCustomComponents');
 }
 
 function changeFormDetailsHandler() {
@@ -119,7 +122,7 @@ function changeFormDetailsHandler() {
 }
 
 function getCurrentWorkspace() {
-    ipcRenderer.send('getCurrentWorkspace.start');
+    backendChanel.send('getCurrentWorkspace');
 }
 
 function getActiveFormPath() {
@@ -138,8 +141,8 @@ function getFormDetails() {
 
 function getFormById(id) {
     return new Promise((res, rej) => {
-        ipcRenderer.send('getFormById.start', { payload: id });
-        ipcRenderer.once('getFormById.end', (event, response) => {
+        backendChanel.send('getFormById', id);
+        backendChanel.once('getFormById', (event, response) => {
             if (response.error) {
                 rej(response.error);
             } else {
@@ -151,8 +154,8 @@ function getFormById(id) {
 
 function getForms() {
     return new Promise((res, rej) => {
-        ipcRenderer.send('getForms.start');
-        ipcRenderer.once('getForms.end', (event, response) => {
+        backendChanel.send('getForms');
+        backendChanel.once('getForms', (event, response) => {
             if (response.error) {
                 rej(response.error);
             } else {
@@ -164,7 +167,7 @@ function getForms() {
 
 function adjustForm(schema = {}) {
     const form = { ...schema, ...getFormDetails() };
-    ipcRenderer.send('adjustForm.start', { payload: form });
+    backendChanel.send('adjustForm', form);
     enableSaveButton();
 }
 
@@ -177,11 +180,11 @@ function disableSaveButton() {
 }
 
 function loadCustomComponentsDetails() {
-    ipcRenderer.send('getCustomComponentsDetails.start');
+    backendChanel.send('getCustomComponentsDetails');
 }
 
 function getCurrentForm() {
-    ipcRenderer.send('getCurrentForm.start');
+    backendChanel.send('getCurrentForm');
 }
 
 function schemaChangedHandler(schema = {}) {
@@ -196,7 +199,7 @@ function submitHandler(submission = {}) {
     $viewDataTabLink.tab('show');
 }
 
-function getCustomComponentsDetailsEndHandler(event, response = {}) {
+function getCustomComponentsDetailsHandler(event, response = {}) {
     if (!response.error) {
         const customComponentsDetails = response.payload;
         if (Array.isArray(customComponentsDetails)) {
@@ -206,7 +209,7 @@ function getCustomComponentsDetailsEndHandler(event, response = {}) {
     getCurrentForm();
 }
 
-function getCurrentFormEndHandler(event, response = {}) {
+function getCurrentFormHandler(event, response = {}) {
     if (!response.error) {
         const form = response.payload;
         setFormDetails(form);
@@ -222,28 +225,28 @@ function setFormDetails(form = {}) {
     })
 }
 
-function saveCurrentFormEndHandler(event, result = {}) {
+function saveCurrentFormHandler(event, result = {}) {
     if (!result.error) {
         $.notify(SAVED_MESSAGE, 'success');
         disableSaveButton();
     }
 }
 
-function focusFieldByNameEndHandler(event, result = {}) {
+function focusFieldByNameHandler(event, result = {}) {
     const name = result.payload;
     const field = detailsForm.elements[name];
     field && field.focus();
 }
 
-function attachLoaderEndHandler() {
+function attachLoaderHandler() {
     document.body.append(loader);
 }
 
-function detachLoaderEndHandler() {
+function detachLoaderHandler() {
     document.body.removeChild(loader);
 }
 
-function getCurrentWorkspaceEndHandler(event, result = {}) {
+function getCurrentWorkspaceHandler(event, result = {}) {
     if (!result.error) {
         const workspace = result.payload;
         const base = document.createElement('base');
@@ -255,22 +258,22 @@ function getCurrentWorkspaceEndHandler(event, result = {}) {
 }
 
 function subscribeOnEvents() {
-    ipcRenderer.on('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
-    ipcRenderer.on('getCurrentForm.end', getCurrentFormEndHandler);
-    ipcRenderer.on('saveCurrentForm.end', saveCurrentFormEndHandler);
-    ipcRenderer.on('focusFieldByName.end', focusFieldByNameEndHandler);
-    ipcRenderer.on('attachLoader.end', attachLoaderEndHandler);
-    ipcRenderer.on('detachLoader.end', detachLoaderEndHandler);
-    ipcRenderer.on('getCurrentWorkspace.end', getCurrentWorkspaceEndHandler);
+    backendChanel.on('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
+    backendChanel.on('getCurrentForm', getCurrentFormHandler);
+    backendChanel.on('saveCurrentForm', saveCurrentFormHandler);
+    backendChanel.on('focusFieldByName', focusFieldByNameHandler);
+    backendChanel.on('attachLoader', attachLoaderHandler);
+    backendChanel.on('detachLoader', detachLoaderHandler);
+    backendChanel.on('getCurrentWorkspace', getCurrentWorkspaceHandler);
 
     return function () {
-        ipcRenderer.off('getCustomComponentsDetails.end', getCustomComponentsDetailsEndHandler);
-        ipcRenderer.off('getCurrentForm.end', getCurrentFormEndHandler);
-        ipcRenderer.off('saveCurrentForm.end', saveCurrentFormEndHandler);
-        ipcRenderer.off('focusFieldByName.end', focusFieldByNameEndHandler);
-        ipcRenderer.off('attachLoader.end', attachLoaderEndHandler);
-        ipcRenderer.off('detachLoader.end', detachLoaderEndHandler);
-        ipcRenderer.off('getCurrentWorkspace.end', getCurrentWorkspaceEndHandler);
+        backendChanel.off('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
+        backendChanel.off('getCurrentForm', getCurrentFormHandler);
+        backendChanel.off('saveCurrentForm', saveCurrentFormHandler);
+        backendChanel.off('focusFieldByName', focusFieldByNameHandler);
+        backendChanel.off('attachLoader', attachLoaderHandler);
+        backendChanel.off('detachLoader', detachLoaderHandler);
+        backendChanel.off('getCurrentWorkspace', getCurrentWorkspaceHandler);
     }
 }
 

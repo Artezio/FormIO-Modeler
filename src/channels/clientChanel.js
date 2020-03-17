@@ -1,16 +1,10 @@
 const { ipcMain } = require('electron');
+const Chanel = require('./chanel');
 
-class ClientChanel {
+class ClientChanel extends Chanel {
     constructor(mainWindow) {
+        super();
         this.mainWindow = mainWindow;
-    }
-
-    _toStart(event) {
-        return event + '.start';
-    }
-
-    _toEnd(event) {
-        return event + '.end';
     }
 
     on(event, handler) {

@@ -2,7 +2,7 @@ const { app, BrowserWindow, Menu, dialog } = require('electron');
 const { format } = require('url');
 const ElectronDialog = require('./dialog');
 const Backend = require('./backend');
-const ClientChanel = require('./clientChanel');
+const ClientChanel = require('./channels/clientChanel');
 const { BASE_TITLE, PATH_TO_START_PAGE, PATH_TO_FORM_EDITOR_PAGE } = require('./constants/backendConstants');
 
 let clientChanel;
