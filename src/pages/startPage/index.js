@@ -45,8 +45,8 @@ function getRecentWorkspaces() {
     backendChanel.send('getRecentWorkspaces');
 }
 
-function loadForm(form) {
-    backendChanel.send('setCurrentForm', form);
+function openFirstForm(form) {
+    backendChanel.send('openFirstForm', form);
 }
 
 function getForms() {
@@ -119,14 +119,14 @@ function getFormsHandler(event, result = {}) {
             const title = `${form.path} (${form.title})`;
             return {
                 title,
-                callback: () => loadForm(form)
+                callback: () => openFirstForm(form)
             }
         }));
         contentContainer.append(createColumn('col-auto', 'Forms', formsList));
     }
     const commandsList = createList([{
         title: 'Create new form',
-        callback: () => openNewForm()
+        callback: () => openFirstForm()
     }])
     contentContainer.append(createColumn('col', 'Start', commandsList));
 }

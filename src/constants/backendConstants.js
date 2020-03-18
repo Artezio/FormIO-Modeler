@@ -17,5 +17,6 @@ exports.CONFIRM_CONSTANTS = {
 }
 exports.FORM_TYPE = 'form';
 exports.CUSTOM_COMPONENTS_FOLDER_NAME = 'custom-components';
+exports.TABS_INFO_FILE_NAME= 'openedTabs.json';
 exports.NOT_VALID_FORM = 'Not valid form';
 exports.BASE_TITLE = 'FormBuilder'

@@ -7,7 +7,7 @@ const { BASE_TITLE, PATH_TO_START_PAGE, PATH_TO_FORM_EDITOR_PAGE } = require('./
 
 let clientChanel;
 let electronDialog;
-let backend;
+let backend = new Backend();
 let mainWindow;
 let unsubscribe;
 
@@ -112,7 +112,7 @@ function getMenuTemplate() {
                 {
                     label: 'Save',
                     accelerator: 'CmdOrCtrl+S',
-                    click: saveCurrentFormHandler,
+                    click: saveCurrentTabHandler,
                     enabled: Boolean(backend && backend.getCurrentWorkspace())
                 },
                 {
@@ -170,6 +170,18 @@ function changeCurrentWorkspaceHandler() {
     }
 }
 
+function setCurrentWorkspaceHandler(event, result = {}) {
+    const workspace = result.payload;
+    try {
+        backend.setCurrentWorkspace(workspace);
+        setMenu();
+        setAppTitle();
+        clientChanel.send('setCurrentWorkspace', workspace);
+    } catch (err) {
+        clientChanel.sendError('setCurrentWorkspace', err);
+    }
+}
+
 function setAppTitle() {
     const currentWorkspace = backend.getCurrentWorkspace();
     if (currentWorkspace) {
@@ -179,26 +191,40 @@ function setAppTitle() {
     }
 }
 
-function saveCurrentFormHandler() {
+function saveCurrentTabHandler() {
     try {
-        backend.saveCurrentForm();
+        backend.saveCurrentTab();
     } catch (err) {
         console.error(err);
     }
 }
 
-function openFormHandler() {
+function openFormHandler(event, response) {
+    const form = response.payload;
     try {
-        backend.openForm();
-        showFormEditorPage();
+        backend.openForm(form);
+        clientChanel.send('openForm');
     } catch (err) {
-        console.error(err);
+        clientChanel.sendError('openForm');
+        console.info(err);
     }
 }
 
 function openNewFormHandler() {
     try {
         backend.openNewForm();
+        clientChanel.send('openNewForm');
+    } catch (err) {
+        clientChanel.sendError('openNewForm');
+        console.info(err);
+    }
+}
+
+function openFirstFormHandler(event, response) {
+    if (response.error) return;
+    const form = response.payload;
+    try {
+        backend.openFirstForm(form);
         showFormEditorPage();
     } catch (err) {
         console.error(err);
@@ -214,27 +240,15 @@ function getRecentWorkspacesHandler() {
     }
 }
 
-function setCurrentWorkspaceHandler(event, result = {}) {
-    const workspace = result.payload;
-    try {
-        backend.setCurrentWorkspace(workspace);
-        setMenu();
-        clientChanel.send('setCurrentWorkspace', workspace);
-        setAppTitle();
-    } catch (err) {
-        clientChanel.sendError('setCurrentWorkspace', err);
-    }
-}
-
-function setCurrentFormHandler(event, result = {}) {
-    const form = result.payload;
-    try {
-        backend.setCurrentForm(form);
-        showFormEditorPage();
-    } catch (err) {
-        clientChanel.sendError('setCurrentForm', err);
-    }
-}
+// function setCurrentFormHandler(event, result = {}) {
+//     const form = result.payload;
+//     try {
+//         backend.setCurrentForm(form);
+//         showFormEditorPage();
+//     } catch (err) {
+//         clientChanel.sendError('setCurrentForm', err);
+//     }
+// }
 
 function getCurrentWorkspaceHandler(event, result = {}) {
     try {
@@ -291,10 +305,19 @@ function getFormByIdHandler(event, result = {}) {
     }
 }
 
+function getTabsHandler() {
+    try {
+        const tabs = backend.getTabs();
+        clientChanel.send('getTabs', tabs);
+    } catch (err) {
+        clientChanel.sendError('getTabs');
+    }
+}
+
 function subscribe() {
     clientChanel.on('getRecentWorkspaces', getRecentWorkspacesHandler);
     clientChanel.on('setCurrentWorkspace', setCurrentWorkspaceHandler);
-    clientChanel.on('setCurrentForm', setCurrentFormHandler);
+    // clientChanel.on('setCurrentForm', setCurrentFormHandler);
     clientChanel.on('getCurrentWorkspace', getCurrentWorkspaceHandler);
     clientChanel.on('changeCurrentWorkspace', changeCurrentWorkspaceHandler);
     clientChanel.on('getCurrentForm', getCurrentFormHandler);
@@ -305,12 +328,14 @@ function subscribe() {
     clientChanel.on('registerCustomComponents', registerCustomComponentsHandler);
     clientChanel.on('openNewForm', openNewFormHandler);
     clientChanel.on('openForm', openFormHandler);
-    clientChanel.on('saveCurrentForm', saveCurrentFormHandler);
+    clientChanel.on('saveCurrentTab', saveCurrentTabHandler);
+    clientChanel.on('getTabs', getTabsHandler);
+    clientChanel.on('openFirstForm', openFirstFormHandler);
 
     return function () {
         clientChanel.off('getRecentWorkspaces', getRecentWorkspacesHandler);
         clientChanel.off('setCurrentWorkspace', setCurrentWorkspaceHandler);
-        clientChanel.off('setCurrentForm', setCurrentFormHandler);
+        // clientChanel.off('setCurrentForm', setCurrentFormHandler);
         clientChanel.off('getCurrentWorkspace', getCurrentWorkspaceHandler);
         clientChanel.off('changeCurrentWorkspace', changeCurrentWorkspaceHandler);
         clientChanel.off('getCurrentForm', getCurrentFormHandler);
@@ -321,7 +346,9 @@ function subscribe() {
         clientChanel.off('registerCustomComponents', registerCustomComponentsHandler);
         clientChanel.off('openNewForm', openNewFormHandler);
         clientChanel.on('openForm', openFormHandler);
-        clientChanel.off('saveCurrentForm', saveCurrentFormHandler);
+        clientChanel.off('saveCurrentTab', saveCurrentTabHandler);
+        clientChanel.off('getTabs', getTabsHandler);
+        clientChanel.off('openFirstForm', openFirstFormHandler);
     }
 }
 

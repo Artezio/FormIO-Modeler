@@ -4,6 +4,7 @@ const path = require('path');
 const { CONFIRM_CONSTANTS, NOT_VALID_FORM } = require('./constants/backendConstants');
 const isForm = require('./util/isForm');
 const isComponent = require('./util/isComponent');
+const Tab = require('./tab');
 
 class Backend {
     constructor(dialog, clientChanel) {
@@ -17,43 +18,52 @@ class Backend {
         throw new Error(message);
     }
 
-    setCurrentForm(form) {
-        this.closeCurrentForm(() => this.dialog.confirmOpenNewForm());
-        this.appState.setForm(form);
+    openFirstForm(form) {
+        const tab = new Tab({ form });
+        this.appState.addTab(tab);
     }
 
-    openForm() {
-        this.closeCurrentForm(() => this.dialog.confirmOpenNewForm());
-        const formPath = this.dialog.selectJsonFile();
-        if (!formPath) {
+    openForm(form) {
+        const formAbsolutePath = this.dialog.selectJsonFile();
+        if (!formAbsolutePath) {
             this.throwError('Action canceled');
         }
+        const appropriateTab = this.appState.tabs.find(tab => tab.id === formAbsolutePath);
+        if (appropriateTab) {
+            this.appState.setActiveTab(appropriateTab);
+            return;
+        }
         try {
-            const form = this.workspaceService.getFormByPath(formPath);
-            this.appState.setForm(form);
+            const form = this.workspaceService.getFormByAbsolutePath(formAbsolutePath);
+            this.appState.addTab({ form, id: formAbsolutePath });
         } catch (err) {
-            const formName = path.basename(formPath);
+            const formName = path.basename(formAbsolutePath);
             this.dialog.alert(`${formName} is not valid form.`)
             this.throwError(err);
         }
     }
 
     openNewForm() {
-        this.closeCurrentForm(() => this.dialog.confirmOpenNewForm());
-        this.appState.setForm({});
+        const tab = new Tab();
+        this.appState.addTab(tab);
     }
 
     getCurrentForm() {
-        return this.appState.form;
+        const form = this.appState.getCurrentForm();
+        return form;
+    }
+
+    getTabs() {
+        return this.appState.tabs;
     }
 
     setCurrentWorkspace(workspace) {
-        this.closeCurrentForm(() => this.dialog.confirmChangeWorkspace());
+        this.closeCurrentTab(() => this.dialog.confirmChangeWorkspace());
         this.appState.setCurrentWorkspace(workspace);
     }
 
     changeCurrentWorkspace() {
-        this.closeCurrentForm(() => this.dialog.confirmChangeWorkspace());
+        this.closeCurrentTab(() => this.dialog.confirmChangeWorkspace());
         const workspace = this.dialog.selectDirectory();
         if (!workspace) {
             this.throwError('Directory not selected');
@@ -61,11 +71,11 @@ class Backend {
         this.appState.setCurrentWorkspace(workspace);
     }
 
-    saveCurrentForm() {
-        if (this.appState.formSaved) return;
-        const form = this.appState.form;
+    _saveTab(tab) {
+        if (tab.formSaved) return;
+        const form = tab.form;
         if (!isForm(form)) {
-            this.alertInvalidField();
+            this.alertInvalidField(form);
             this.throwError(NOT_VALID_FORM);
         }
         const formExists = this.workspaceService.formExistsByPathField(form.path);
@@ -73,10 +83,10 @@ class Backend {
             form.created = form.created || new Date().toISOString();
             form.modified = new Date().toISOString();
             this.workspaceService.saveForm(form);
-            this.appState.formSaved = true;
+            tab.formSaved = true;
             this.clientChanel.send('saveCurrentForm');
         }
-        if (formExists && this.appState.needReplaceForm) {
+        if (formExists && tab.needReplaceForm) {
             const canReplace = this.dialog.confirmReplaceFile(form.path + '.json');
             if (canReplace) {
                 save()
@@ -88,18 +98,22 @@ class Backend {
         }
     }
 
-    alertInvalidField() {
-        if (!this.appState.form.title) {
+    saveCurrentTab() {
+        this.appState.currentTab && this._saveTab(this.appState.currentTab);
+    }
+
+    alertInvalidField(form) {
+        if (!form.title) {
             this.dialog.alert('Enter title to save form.');
             this.clientChanel.send('focusFieldByName', 'title');
             return;
         }
-        if (!this.appState.form.name) {
+        if (!form.name) {
             this.dialog.alert('Enter name to save form.');
             this.clientChanel.send('focusFieldByName', 'name');
             return;
         }
-        if (!this.appState.form.path) {
+        if (!form.path) {
             this.dialog.alert('Enter path to save form.');
             this.clientChanel.send('focusFieldByName', 'path');
             return;
@@ -107,11 +121,12 @@ class Backend {
     }
 
     closeApp() {
-        this.closeCurrentForm(() => this.dialog.confirmCloseMainWindow())
+        this.closeCurrentTab(() => this.dialog.confirmCloseMainWindow())
     }
 
-    closeCurrentForm(confirm) {
-        if (this.appState.formSaved) return;
+    _closeTab(tab, confirm) {
+        const appropriateTab = this.appState.tabs.find(t => t.id === tab.id);
+        if (!appropriateTab) this.throwError('Client and Backend tabs don\'t match');
         const answer = confirm();
         switch (answer) {
             case CONFIRM_CONSTANTS.CANCEL: {
@@ -122,7 +137,7 @@ class Backend {
                 return;
             }
             case CONFIRM_CONSTANTS.SAVE: {
-                this.saveCurrentForm();
+                this._saveTab(tab);
                 break;
             }
             default: {
@@ -130,6 +145,14 @@ class Backend {
                 break;
             }
         }
+    }
+
+    closeAllTabs(confirm) {
+        this.appState.tabs.forEach(tab => this._closeTab(tab));
+    }
+
+    closeCurrentTab(confirm) {
+        this.appState.currentTab && this._closeTab(this.appState.currentTab);
     }
 
     registerCustomComponents() {
@@ -192,7 +215,7 @@ class Backend {
     }
 
     adjustForm(formUpdates) {
-        this.appState.adjustForm(formUpdates);
+        this.appState.adjustCurrentForm(formUpdates);
     }
 
     getCustomComponentsDetails() {

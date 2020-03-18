@@ -76,7 +76,7 @@ class WorkspaceService {
         }
     }
 
-    getFormByPath(formPath) {
+    getFormByAbsolutePath(formPath) {
         try {
             let form = fs.readFileSync(formPath, { encoding: 'utf8' });
             form = JSON.parse(form);

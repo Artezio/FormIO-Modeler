@@ -1,4 +1,4 @@
-const uuid = require('uuid');
+const clearNode = require('../../util/clearNode');
 
 class TabBar {
     constructor(container) {
@@ -7,14 +7,14 @@ class TabBar {
         this.tabs = [this._newTab];
     }
 
-    _createTabLink(tab = {}, isNewTab) {
-        const { title, isActive } = tab;
+    _createTabLink(title, isActive, tabCreator) {
         const tabLink = document.createElement('a');
         tabLink.classList.add('nav-item', 'nav-link');
         if (isActive) {
             tabLink.classList.add('active');
         }
         tabLink.textContent = title;
+
     }
 
     addTabLink(tab) {
@@ -22,7 +22,9 @@ class TabBar {
     }
 
     setTabs(tabs) {
-
+        clearNode(this.container);
+        const tabLinks = tabs.map(tab => this._createTabLink(tab));
+        this.container.append(...tabLinks, );
     }
 }
 

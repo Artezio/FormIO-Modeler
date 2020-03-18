@@ -1,5 +1,3 @@
-require('bootstrap');
-initJQueryNotify();
 const { shell } = require('electron');
 const path = require('path');
 const $ = require('jquery');
@@ -11,8 +9,12 @@ const getLoader = require('../../util/getLoader');
 const BackendChanel = require('../../channels/backendChanel');
 const TabBar = require('./tabBar');
 
+require('bootstrap');
+initJQueryNotify();
+
 
 const detailsForm = document.forms.formDetails;
+const tabBarContainer = document.getElementById('tab-bar');
 const $viewDataTabLink = $(document.getElementById('view-data-tab'));
 const $viewBuilderTabLink = $(document.getElementById('edit-form-tab'))
 const jsonContainer = document.getElementById('viewData');
@@ -23,7 +25,7 @@ const labelArtezioLink = document.getElementById('label-artezio-link');
 const advertizingModalWrapper = document.getElementById('advertizing-modal');
 const advertizingModal = document.getElementById('modal');
 const toolBarButtons = {
-    saveCurrentForm: toolBar.children['saveCurrentForm'],
+    saveCurrentTab: toolBar.children['saveCurrentForm'],
     openNewForm: toolBar.children['openNewForm'],
     openForm: toolBar.children['openForm'],
     changeCurrentWorkspace: toolBar.children['changeCurrentWorkspace'],
@@ -31,7 +33,7 @@ const toolBarButtons = {
 }
 const loader = getLoader();
 
-const tabBar = new TabBar();
+const tabBar = new TabBar(tabBarContainer);
 const backendChanel = new BackendChanel();
 
 let modalRemoverTimerId;
@@ -56,7 +58,7 @@ function run() {
     detailsForm.addEventListener('input', changeFormDetailsHandler);
     toolBarButtons.openNewForm.addEventListener('click', openNewForm);
     toolBarButtons.openForm.addEventListener('click', openForm);
-    toolBarButtons.saveCurrentForm.addEventListener('click', saveCurrentForm);
+    toolBarButtons.saveCurrentTab.addEventListener('click', saveCurrentTab);
     toolBarButtons.changeCurrentWorkspace.addEventListener('click', changeCurrentWorkspace);
     toolBarButtons.registerCustomComponents.addEventListener('click', registerCustomComponents);
     labelArtezioLink.addEventListener('click', attachAdvertisingModal);
@@ -67,7 +69,7 @@ function run() {
         detailsForm.removeEventListener('input', changeFormDetailsHandler);
         toolBarButtons.openNewForm.removeEventListener('click', openNewForm);
         toolBarButtons.openForm.removeEventListener('click', openForm);
-        toolBarButtons.saveCurrentForm.removeEventListener('click', saveCurrentForm);
+        toolBarButtons.saveCurrentTab.removeEventListener('click', saveCurrentTab);
         toolBarButtons.changeCurrentWorkspace.removeEventListener('click', changeCurrentWorkspace);
         toolBarButtons.registerCustomComponents.removeEventListener('click', registerCustomComponents);
         labelArtezioLink.removeEventListener('click', attachAdvertisingModal);
@@ -108,8 +110,8 @@ function openForm() {
     backendChanel.send('openForm');
 }
 
-function saveCurrentForm() {
-    backendChanel.send('saveCurrentForm');
+function saveCurrentTab() {
+    backendChanel.send('saveCurrentTab');
 }
 
 function changeCurrentWorkspace() {
@@ -175,11 +177,11 @@ function adjustForm(schema = {}) {
 }
 
 function enableSaveButton() {
-    toolBarButtons.saveCurrentForm.disabled = false;
+    toolBarButtons.saveCurrentTab.disabled = false;
 }
 
 function disableSaveButton() {
-    toolBarButtons.saveCurrentForm.disabled = true;
+    toolBarButtons.saveCurrentTab.disabled = true;
 }
 
 function getCustomComponentsDetails() {
@@ -226,7 +228,7 @@ function getCustomComponentsDetailsHandler(event, response = {}) {
 
 function getTabsHandler(event, response = {}) {
     if (response.error) return;
-    const tabs = response.tabs;
+    const tabs = response.payload;
     tabBar.setTabs(tabs);
     getCurrentForm();
 }
