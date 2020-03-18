@@ -108,3 +108,11 @@ body {
   z-index: 1001;
   background-color: white;
 }
+
+.nav-tabs .nav-item {
+  cursor: default;
+}
+
+.nav-tabs .nav-item:not(.active) {
+  cursor: pointer;
+}

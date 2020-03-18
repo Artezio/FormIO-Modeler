@@ -18,6 +18,10 @@ class Backend {
         throw new Error(message);
     }
 
+    setActiveTab(tab) {
+        this.appState.setActiveTab(tab);
+    }
+
     openFirstForm(form) {
         const tab = new Tab({ form });
         this.appState.addTab(tab);
@@ -35,7 +39,9 @@ class Backend {
         }
         try {
             const form = this.workspaceService.getFormByAbsolutePath(formAbsolutePath);
-            this.appState.addTab({ form, id: formAbsolutePath });
+            const tab = new Tab({ form, id: formAbsolutePath })
+            this.appState.addTab(tab);
+            this.appState.setActiveTab(tab);
         } catch (err) {
             const formName = path.basename(formAbsolutePath);
             this.dialog.alert(`${formName} is not valid form.`)
@@ -46,6 +52,7 @@ class Backend {
     openNewForm() {
         const tab = new Tab();
         this.appState.addTab(tab);
+        this.appState.setActiveTab(tab);
     }
 
     getCurrentForm() {

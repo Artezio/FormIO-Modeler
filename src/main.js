@@ -314,10 +314,19 @@ function getTabsHandler() {
     }
 }
 
+function setActiveTabHandler(event, response) {
+    try {
+        const tab = response.payload;
+        backend.setActiveTab(tab);
+        clientChanel.send('setActiveTab');
+    } catch (err) {
+        clientChanel.sendError('setActiveTab');
+    }
+}
+
 function subscribe() {
     clientChanel.on('getRecentWorkspaces', getRecentWorkspacesHandler);
     clientChanel.on('setCurrentWorkspace', setCurrentWorkspaceHandler);
-    // clientChanel.on('setCurrentForm', setCurrentFormHandler);
     clientChanel.on('getCurrentWorkspace', getCurrentWorkspaceHandler);
     clientChanel.on('changeCurrentWorkspace', changeCurrentWorkspaceHandler);
     clientChanel.on('getCurrentForm', getCurrentFormHandler);
@@ -331,11 +340,11 @@ function subscribe() {
     clientChanel.on('saveCurrentTab', saveCurrentTabHandler);
     clientChanel.on('getTabs', getTabsHandler);
     clientChanel.on('openFirstForm', openFirstFormHandler);
+    clientChanel.on('setActiveTab', setActiveTabHandler);
 
     return function () {
         clientChanel.off('getRecentWorkspaces', getRecentWorkspacesHandler);
         clientChanel.off('setCurrentWorkspace', setCurrentWorkspaceHandler);
-        // clientChanel.off('setCurrentForm', setCurrentFormHandler);
         clientChanel.off('getCurrentWorkspace', getCurrentWorkspaceHandler);
         clientChanel.off('changeCurrentWorkspace', changeCurrentWorkspaceHandler);
         clientChanel.off('getCurrentForm', getCurrentFormHandler);
@@ -349,6 +358,7 @@ function subscribe() {
         clientChanel.off('saveCurrentTab', saveCurrentTabHandler);
         clientChanel.off('getTabs', getTabsHandler);
         clientChanel.off('openFirstForm', openFirstFormHandler);
+        clientChanel.on('setActiveTab', setActiveTabHandler);
     }
 }
 

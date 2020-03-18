@@ -294,6 +294,9 @@ function subscribeOnEvents() {
     backendChanel.on('getCurrentWorkspace', getCurrentWorkspaceHandler);
     backendChanel.on('getTabs', getTabsHandler);
     backendChanel.on('switchTab', switchTabHandler);
+    backendChanel.on('openNewForm', getTabs);
+    backendChanel.on('setActiveTab', getTabs);
+    backendChanel.on('openForm', getTabs);
 
     return function () {
         backendChanel.off('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
@@ -305,6 +308,9 @@ function subscribeOnEvents() {
         backendChanel.off('getCurrentWorkspace', getCurrentWorkspaceHandler);
         backendChanel.off('getTabs', getTabsHandler);
         backendChanel.off('switchTab', switchTabHandler);
+        backendChanel.off('openNewForm', getTabs);
+        backendChanel.off('setActiveTab', getTabs);
+        backendChanel.off('openForm', getTabs);
     }
 }
 
