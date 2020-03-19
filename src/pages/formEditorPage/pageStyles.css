@@ -109,10 +109,27 @@ body {
   background-color: white;
 }
 
-.nav-tabs .nav-item {
+.nav-tabs .nav-item.active {
   cursor: default;
 }
 
-.nav-tabs .nav-item:not(.active) {
-  cursor: pointer;
+.tab-links .nav-item {
+  width: 150px;
+  height: 35px;
+  padding: 5px 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-links .nav-item.new-tab-link {
+  width: 45px;
+}
+
+.close-tab-cross:hover {
+  color: orange;
 }

@@ -4,8 +4,10 @@ const BackendChanel = require('../../channels/backendChanel');
 const backendChanel = new BackendChanel();
 
 const newTabLink = document.createElement('a');
-newTabLink.classList.add('nav-item', 'nav-link');
+newTabLink.classList.add('nav-item', 'nav-link', 'new-tab-link');
 newTabLink.textContent = '+';
+newTabLink.title = "Create new form";
+newTabLink.href = 'javascript:void(0)';
 newTabLink.onclick = addNewTab;
 
 function addNewTab() {
@@ -14,6 +16,10 @@ function addNewTab() {
 
 function setActiveTab(tab) {
     backendChanel.send('setActiveTab', tab);
+}
+
+function closeTab(tab) {
+    backendChanel.send('closeTab', tab);
 }
 
 class TabBar {
@@ -30,9 +36,23 @@ class TabBar {
         if (isActive) {
             tabLink.classList.add('active');
         }
-        const title = form.path ? form.path + '.json' : 'untitled';
+        const title = tab.savedFormPath ? tab.savedFormPath + '.json' : 'untitled';
+        tabLink.href = 'javascript:void(0)';
         tabLink.textContent = title;
-        tabLink.onclick = () => setActiveTab(tab);
+        tabLink.title = title;
+        tabLink.onclick = () => {
+            if (!$(tabLink).hasClass('active')) {
+                setActiveTab(tab)
+            }
+        };
+        const cross = document.createElement('span');
+        cross.innerHTML = '&#215;'
+        cross.classList.add('ml-2', 'close-tab-cross');
+        cross.onclick = e => {
+            e.stopPropagation();
+            closeTab(tab)
+        };
+        tabLink.append(cross);
         return tabLink;
     }
 

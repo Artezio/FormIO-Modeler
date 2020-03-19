@@ -1,7 +1,7 @@
 const WorkspaceService = require('./workspaceService');
 const AppState = require('./appState');
 const path = require('path');
-const { CONFIRM_CONSTANTS, NOT_VALID_FORM } = require('./constants/backendConstants');
+const { CONFIRM_CONSTANTS, NOT_VALID_FORM, NEW_FORM_NAME } = require('./constants/backendConstants');
 const isForm = require('./util/isForm');
 const isComponent = require('./util/isComponent');
 const Tab = require('./tab');
@@ -32,15 +32,13 @@ class Backend {
         if (!formAbsolutePath) {
             this.throwError('Action canceled');
         }
-        const appropriateTab = this.appState.tabs.find(tab => tab.id === formAbsolutePath);
-        if (appropriateTab) {
-            this.appState.setActiveTab(appropriateTab);
-            return;
-        }
         try {
             const form = this.workspaceService.getFormByAbsolutePath(formAbsolutePath);
-            const tab = new Tab({ form, id: formAbsolutePath })
-            this.appState.addTab(tab);
+            let tab = this.appState.tabs.find(tab => tab.form.path === form.path);
+            if (!tab) {
+                tab = new Tab({ form, id: formAbsolutePath })
+                this.appState.addTab(tab);
+            }
             this.appState.setActiveTab(tab);
         } catch (err) {
             const formName = path.basename(formAbsolutePath);
@@ -65,12 +63,11 @@ class Backend {
     }
 
     setCurrentWorkspace(workspace) {
-        this.closeCurrentTab(() => this.dialog.confirmChangeWorkspace());
         this.appState.setCurrentWorkspace(workspace);
     }
 
     changeCurrentWorkspace() {
-        this.closeCurrentTab(() => this.dialog.confirmChangeWorkspace());
+        this.closeAllTabs();
         const workspace = this.dialog.selectDirectory();
         if (!workspace) {
             this.throwError('Directory not selected');
@@ -96,7 +93,7 @@ class Backend {
         if (formExists && tab.needReplaceForm) {
             const canReplace = this.dialog.confirmReplaceFile(form.path + '.json');
             if (canReplace) {
-                save()
+                save();
             } else {
                 this.throwError('Action canceled');
             }
@@ -105,8 +102,8 @@ class Backend {
         }
     }
 
-    saveCurrentTab() {
-        this.appState.currentTab && this._saveTab(this.appState.currentTab);
+    saveActiveTab() {
+        this.appState.activeTab && this._saveTab(this.appState.activeTab);
     }
 
     alertInvalidField(form) {
@@ -128,38 +125,65 @@ class Backend {
     }
 
     closeApp() {
-        this.closeCurrentTab(() => this.dialog.confirmCloseMainWindow())
+        this.closeAllTabs();
     }
 
     _closeTab(tab, confirm) {
         const appropriateTab = this.appState.tabs.find(t => t.id === tab.id);
         if (!appropriateTab) this.throwError('Client and Backend tabs don\'t match');
-        const answer = confirm();
-        switch (answer) {
-            case CONFIRM_CONSTANTS.CANCEL: {
-                this.throwError('Action canceled');
-                break;
-            }
-            case CONFIRM_CONSTANTS.NOT_SAVE: {
-                return;
-            }
-            case CONFIRM_CONSTANTS.SAVE: {
-                this._saveTab(tab);
-                break;
-            }
-            default: {
-                this.throwError('Action canceled');
-                break;
+        if (!tab.formSaved) {
+            const answer = confirm();
+            switch (answer) {
+                case CONFIRM_CONSTANTS.CANCEL: {
+                    this.throwError('Action canceled');
+                    break;
+                }
+                case CONFIRM_CONSTANTS.NOT_SAVE: {
+                    break;
+                }
+                case CONFIRM_CONSTANTS.SAVE: {
+                    this._saveTab(tab);
+                    break;
+                }
+                default: {
+                    this.throwError('Action canceled');
+                    break;
+                }
             }
         }
+        this.appState.removeTab(tab);
     }
 
-    closeAllTabs(confirm) {
-        this.appState.tabs.forEach(tab => this._closeTab(tab));
+    closeTab(tab) {
+        const activeTab = this.appState.activeTab;
+        this.appState.setActiveTab(tab);
+        try {
+            this._closeTab(tab, () => this.dialog.confirmCloseUnsavedTab(tab.form.path ? tab.form.path + 'json' : NEW_FORM_NAME));
+            const activeTabIndex = this.appState.tabs.findIndex(tab => tab.id === activeTab.id);
+            if (tab.id === activeTab.id) {
+                if (activeTabIndex > 0) {
+                    this.appState.setActiveTab(this.appState.tabs[activeTabIndex - 1]);
+                } else {
+                    this.appState.setActiveTab(this.appState.tabs[0]);
+                }
+            } else {
+                this.appState.setActiveTab(activeTab);
+            }
+        } catch (err) {
+            this.throwError(err);
+        }
+
     }
 
-    closeCurrentTab(confirm) {
-        this.appState.currentTab && this._closeTab(this.appState.currentTab);
+    closeAllTabs() {
+        this.appState.tabs.forEach((tab, i) => {
+            console.log('log', i)
+            this.closeTab(tab)
+        });
+    }
+
+    closeCurrentTab() {
+        this.appState.currentTab && this.closeTab(this.appState.currentTab);
     }
 
     registerCustomComponents() {
@@ -221,7 +245,7 @@ class Backend {
         return this.workspaceService.getForms();
     }
 
-    adjustForm(formUpdates) {
+    adjustCurrentForm(formUpdates) {
         this.appState.adjustCurrentForm(formUpdates);
     }
 

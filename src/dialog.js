@@ -54,6 +54,24 @@ class ElectronDialog {
         }
     }
 
+    confirmCloseUnsavedTab(title) {
+        const answer = this.dialog.showMessageBoxSync(this.window, {
+            message: `Save changes in ${title} before closing?`,
+            type: 'question',
+            title: 'Closing form',
+            cancelId: 0,
+            defaultId: 0,
+            noLink: true,
+            buttons: ['Cancel', 'Save', 'Don\' Save']
+        })
+        switch (answer) {
+            case 0: return CONFIRM_CONSTANTS.CANCEL;
+            case 1: return CONFIRM_CONSTANTS.SAVE;
+            case 2: return CONFIRM_CONSTANTS.NOT_SAVE;
+            default: return CONFIRM_CONSTANTS.CANCEL;
+        }
+    }
+
     confirmCloseMainWindow() {
         const answer = this.dialog.showMessageBoxSync(this.window, {
             message: 'Save changes before closing?',

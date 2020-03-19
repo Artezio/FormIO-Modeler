@@ -25,7 +25,7 @@ const labelArtezioLink = document.getElementById('label-artezio-link');
 const advertizingModalWrapper = document.getElementById('advertizing-modal');
 const advertizingModal = document.getElementById('modal');
 const toolBarButtons = {
-    saveCurrentTab: toolBar.children['saveCurrentForm'],
+    saveActiveTab: toolBar.children['saveCurrentForm'],
     openNewForm: toolBar.children['openNewForm'],
     openForm: toolBar.children['openForm'],
     changeCurrentWorkspace: toolBar.children['changeCurrentWorkspace'],
@@ -58,7 +58,7 @@ function run() {
     detailsForm.addEventListener('input', changeFormDetailsHandler);
     toolBarButtons.openNewForm.addEventListener('click', openNewForm);
     toolBarButtons.openForm.addEventListener('click', openForm);
-    toolBarButtons.saveCurrentTab.addEventListener('click', saveCurrentTab);
+    toolBarButtons.saveActiveTab.addEventListener('click', saveActiveTab);
     toolBarButtons.changeCurrentWorkspace.addEventListener('click', changeCurrentWorkspace);
     toolBarButtons.registerCustomComponents.addEventListener('click', registerCustomComponents);
     labelArtezioLink.addEventListener('click', attachAdvertisingModal);
@@ -69,7 +69,7 @@ function run() {
         detailsForm.removeEventListener('input', changeFormDetailsHandler);
         toolBarButtons.openNewForm.removeEventListener('click', openNewForm);
         toolBarButtons.openForm.removeEventListener('click', openForm);
-        toolBarButtons.saveCurrentTab.removeEventListener('click', saveCurrentTab);
+        toolBarButtons.saveActiveTab.removeEventListener('click', saveActiveTab);
         toolBarButtons.changeCurrentWorkspace.removeEventListener('click', changeCurrentWorkspace);
         toolBarButtons.registerCustomComponents.removeEventListener('click', registerCustomComponents);
         labelArtezioLink.removeEventListener('click', attachAdvertisingModal);
@@ -110,8 +110,8 @@ function openForm() {
     backendChanel.send('openForm');
 }
 
-function saveCurrentTab() {
-    backendChanel.send('saveCurrentTab');
+function saveActiveTab() {
+    backendChanel.send('saveActiveTab');
 }
 
 function changeCurrentWorkspace() {
@@ -170,6 +170,14 @@ function getForms() {
     })
 }
 
+function clarifySaveButtonDisable(tab) {
+    if (tab.formSaved) {
+        disableSaveButton();
+    } else {
+        enableSaveButton();
+    }
+}
+
 function adjustForm(schema = {}) {
     const form = { ...schema, ...getFormDetails() };
     backendChanel.send('adjustForm', form);
@@ -177,11 +185,11 @@ function adjustForm(schema = {}) {
 }
 
 function enableSaveButton() {
-    toolBarButtons.saveCurrentTab.disabled = false;
+    toolBarButtons.saveActiveTab.disabled = false;
 }
 
 function disableSaveButton() {
-    toolBarButtons.saveCurrentTab.disabled = true;
+    toolBarButtons.saveActiveTab.disabled = true;
 }
 
 function getCustomComponentsDetails() {
@@ -230,6 +238,8 @@ function getTabsHandler(event, response = {}) {
     if (response.error) return;
     const tabs = response.payload;
     tabBar.setTabs(tabs);
+    const activeTab = tabs.find(tab => tab.isActive);
+    clarifySaveButtonDisable(activeTab);
     getCurrentForm();
 }
 
@@ -284,6 +294,15 @@ function getCurrentWorkspaceHandler(event, result = {}) {
     getCustomComponentsDetails();
 }
 
+function refreshContent(event, response = {}) {
+    if (response.error) return;
+    getTabs();
+}
+
+function closeTabHandler() {
+    getTabs();
+}
+
 function subscribeOnEvents() {
     backendChanel.on('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
     backendChanel.on('getCurrentForm', getCurrentFormHandler);
@@ -294,9 +313,10 @@ function subscribeOnEvents() {
     backendChanel.on('getCurrentWorkspace', getCurrentWorkspaceHandler);
     backendChanel.on('getTabs', getTabsHandler);
     backendChanel.on('switchTab', switchTabHandler);
-    backendChanel.on('openNewForm', getTabs);
-    backendChanel.on('setActiveTab', getTabs);
-    backendChanel.on('openForm', getTabs);
+    backendChanel.on('openNewForm', refreshContent);
+    backendChanel.on('setActiveTab', refreshContent);
+    backendChanel.on('openForm', refreshContent);
+    backendChanel.on('closeTab', closeTabHandler);
 
     return function () {
         backendChanel.off('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
@@ -308,9 +328,10 @@ function subscribeOnEvents() {
         backendChanel.off('getCurrentWorkspace', getCurrentWorkspaceHandler);
         backendChanel.off('getTabs', getTabsHandler);
         backendChanel.off('switchTab', switchTabHandler);
-        backendChanel.off('openNewForm', getTabs);
-        backendChanel.off('setActiveTab', getTabs);
-        backendChanel.off('openForm', getTabs);
+        backendChanel.off('openNewForm', refreshContent);
+        backendChanel.off('setActiveTab', refreshContent);
+        backendChanel.off('openForm', refreshContent);
+        backendChanel.off('closeTab', closeTabHandler);
     }
 }
 

@@ -112,7 +112,7 @@ function getMenuTemplate() {
                 {
                     label: 'Save',
                     accelerator: 'CmdOrCtrl+S',
-                    click: saveCurrentTabHandler,
+                    click: saveActiveTabHandler,
                     enabled: Boolean(backend && backend.getCurrentWorkspace())
                 },
                 {
@@ -145,6 +145,15 @@ function getMenuTemplate() {
 function toggleDevTools(item, focusedWindow) {
     if (focusedWindow) {
         focusedWindow.toggleDevTools()
+    }
+}
+
+function setAppTitle() {
+    const currentWorkspace = backend.getCurrentWorkspace();
+    if (currentWorkspace) {
+        mainWindow.setTitle(`${BASE_TITLE} - [${currentWorkspace}]`);
+    } else {
+        mainWindow.setTitle(BASE_TITLE);
     }
 }
 
@@ -182,18 +191,9 @@ function setCurrentWorkspaceHandler(event, result = {}) {
     }
 }
 
-function setAppTitle() {
-    const currentWorkspace = backend.getCurrentWorkspace();
-    if (currentWorkspace) {
-        mainWindow.setTitle(`${BASE_TITLE} - [${currentWorkspace}]`);
-    } else {
-        mainWindow.setTitle(BASE_TITLE);
-    }
-}
-
-function saveCurrentTabHandler() {
+function saveActiveTabHandler() {
     try {
-        backend.saveCurrentTab();
+        backend.saveActiveTab();
     } catch (err) {
         console.error(err);
     }
@@ -240,16 +240,6 @@ function getRecentWorkspacesHandler() {
     }
 }
 
-// function setCurrentFormHandler(event, result = {}) {
-//     const form = result.payload;
-//     try {
-//         backend.setCurrentForm(form);
-//         showFormEditorPage();
-//     } catch (err) {
-//         clientChanel.sendError('setCurrentForm', err);
-//     }
-// }
-
 function getCurrentWorkspaceHandler(event, result = {}) {
     try {
         const currentWorkspace = backend.getCurrentWorkspace();
@@ -289,7 +279,7 @@ function getCustomComponentsDetailsHandler() {
 function adjustFormHandler(event, result = {}) {
     const changes = result.payload;
     try {
-        backend.adjustForm(changes);
+        backend.adjustCurrentForm(changes);
     } catch (err) {
         console.error(err);
     }
@@ -315,12 +305,30 @@ function getTabsHandler() {
 }
 
 function setActiveTabHandler(event, response) {
+    let tab = response.payload;
+    tab = backend.appState.tabs.find(t => t.id === tab.id);
     try {
-        const tab = response.payload;
+        if (!tab) throw new Error('Backend and Client tabs don\'t match!');
         backend.setActiveTab(tab);
         clientChanel.send('setActiveTab');
     } catch (err) {
         clientChanel.sendError('setActiveTab');
+    }
+}
+
+function closeTabHandler(event, response) {
+    let tab = response.payload;
+    tab = backend.appState.tabs.find(t => t.id === tab.id);
+    try {
+        if (!tab) throw new Error('Backend and Client tabs don\'t match!');
+        backend.closeTab(tab);
+        if (backend.appState.tabs.length === 0) {
+            showStartPage();
+            return;
+        }
+        clientChanel.send('closeTab');
+    } catch (err) {
+        clientChanel.sendError('closeTab', err);
     }
 }
 
@@ -337,10 +345,11 @@ function subscribe() {
     clientChanel.on('registerCustomComponents', registerCustomComponentsHandler);
     clientChanel.on('openNewForm', openNewFormHandler);
     clientChanel.on('openForm', openFormHandler);
-    clientChanel.on('saveCurrentTab', saveCurrentTabHandler);
+    clientChanel.on('saveActiveTab', saveActiveTabHandler);
     clientChanel.on('getTabs', getTabsHandler);
     clientChanel.on('openFirstForm', openFirstFormHandler);
     clientChanel.on('setActiveTab', setActiveTabHandler);
+    clientChanel.on('closeTab', closeTabHandler);
 
     return function () {
         clientChanel.off('getRecentWorkspaces', getRecentWorkspacesHandler);
@@ -355,10 +364,11 @@ function subscribe() {
         clientChanel.off('registerCustomComponents', registerCustomComponentsHandler);
         clientChanel.off('openNewForm', openNewFormHandler);
         clientChanel.on('openForm', openFormHandler);
-        clientChanel.off('saveCurrentTab', saveCurrentTabHandler);
+        clientChanel.off('saveActiveTab', saveActiveTabHandler);
         clientChanel.off('getTabs', getTabsHandler);
         clientChanel.off('openFirstForm', openFirstFormHandler);
         clientChanel.on('setActiveTab', setActiveTabHandler);
+        clientChanel.off('closeTab', closeTabHandler);
     }
 }
 

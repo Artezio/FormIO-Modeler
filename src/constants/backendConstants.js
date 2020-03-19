@@ -1,6 +1,8 @@
 const { app } = require('electron');
 const path = require('path');
 
+const { NEW_FORM_NAME } = require('./mutual');
+
 exports.BASE_TITLE = 'FormBuilder';
 exports.PATH_TO_WORKSPACES_INFO = path.resolve(app.getPath('userData'), './recentWorkspaces.txt');
 exports.PATH_TO_START_PAGE = path.resolve(app.getAppPath(), './src/pages/startPage/start.html');
@@ -17,6 +19,7 @@ exports.CONFIRM_CONSTANTS = {
 }
 exports.FORM_TYPE = 'form';
 exports.CUSTOM_COMPONENTS_FOLDER_NAME = 'custom-components';
-exports.TABS_INFO_FILE_NAME= 'openedTabs.json';
+exports.TABS_INFO_FILE_NAME = 'openedTabs.json';
 exports.NOT_VALID_FORM = 'Not valid form';
 exports.BASE_TITLE = 'FormBuilder'
+exports.NEW_FORM_NAME = NEW_FORM_NAME;

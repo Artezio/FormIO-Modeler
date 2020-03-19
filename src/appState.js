@@ -12,10 +12,11 @@ class AppState {
         this.form = {};
         this._formSaved = true;
         this.tabs = [];
-        this._init();
+        this._initRecentWorkspaces();
     }
 
     setActiveTab(tab) {
+        if (!this.tabs.length) return;
         if (!tab || this.tabs.findIndex(t => t.id === tab.id) === -1) {
             tab = this.tabs[0];
         }
@@ -37,6 +38,13 @@ class AppState {
         this._clarifyActiveTab();
     }
 
+    removeTab(tab) {
+        const index = this.tabs.findIndex(t => t.id === tab.id);
+        if (index === -1) return;
+        this.tabs.splice(index, 1);
+        this._clarifyActiveTab();
+    }
+
     _clarifyActiveTab() {
         if (this.tabs.filter(tab => tab.active).length !== 1) {
             this.setActiveTab(this.tabs[0]);
@@ -45,21 +53,6 @@ class AppState {
 
     getCurrentForm() {
         return this.activeTab.form;
-    }
-
-    get currentFormSaved() {
-        return this._formSaved;
-    }
-
-    set currentFormSaved(formSaved) {
-        if (formSaved) {
-            this.currentFormPath = this.form.path;
-        }
-        this._formSaved = formSaved;
-    }
-
-    get needReplaceForm() {
-        return !this.form.path || this.currentFormPath !== this.form.path;
     }
 
     _addRecentWorkspace(workspace) {
@@ -73,7 +66,7 @@ class AppState {
         }
     }
 
-    _init() {
+    _initRecentWorkspaces() {
         try {
             if (fs.existsSync(PATH_TO_WORKSPACES_INFO)) {
                 let workspaces = fs.readFileSync(PATH_TO_WORKSPACES_INFO, { encoding: 'utf8' });
@@ -94,6 +87,7 @@ class AppState {
     }
 
     _initTabs() {
+        this.tabs = [];
         try {
             const tabs = fs.readFileSync(path.resolve(this.currentWorkspace, TABS_INFO_FILE_NAME), { encoding: 'utf8' });
             tabs = JSON.parse(tabs);
