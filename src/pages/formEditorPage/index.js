@@ -181,6 +181,7 @@ function adjustForm(schema = {}) {
     const form = { ...schema, ...getFormDetails() };
     backendChanel.send('adjustForm', form);
     enableSaveButton();
+    tabBar.setActiveTabUnsaved();
 }
 
 function enableSaveButton() {

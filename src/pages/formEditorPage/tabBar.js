@@ -37,10 +37,16 @@ class TabBar {
         tabLink.classList.add('nav-item', 'nav-link');
         if (isActive) {
             tabLink.classList.add('active');
+            this.activeTab = tabLink;
         }
         const title = tab.savedFormPath ? path.basename(tab.savedFormPath + '.json') : NEW_FORM_NAME;
         tabLink.href = 'javascript:void(0)';
-        tabLink.textContent = title;
+        const span = document.createElement('span');
+        span.textContent = title;
+        if (!tab._formSaved) {
+            tabLink.classList.add('text-danger');
+        }
+        tabLink.append(span);
         tabLink.title = title;
         tabLink.onclick = () => {
             if (!$(tabLink).hasClass('active')) {
@@ -56,6 +62,14 @@ class TabBar {
         };
         tabLink.append(cross);
         return tabLink;
+    }
+
+    setActiveTabUnsaved() {
+        if (this.activeTab) {
+            if (!this.activeTab.classList.contains('text-danger')) {
+                this.activeTab.classList.add('text-danger');
+            }
+        }
     }
 
     setTabs(tabs) {
