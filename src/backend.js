@@ -155,14 +155,15 @@ class Backend {
     closeTab(tab) {
         const activeTab = this.appState.activeTab;
         this.appState.setActiveTab(tab);
+        const tabs = this.appState.tabs.slice();
         try {
             this._closeTab(tab, () => this.dialog.confirmCloseUnsavedTab(tab.form.path ? tab.form.path + 'json' : NEW_FORM_NAME));
-            const activeTabIndex = this.appState.tabs.findIndex(tab => tab.id === activeTab.id);
+            const activeTabIndex = tabs.findIndex(tab => tab.id === activeTab.id);
             if (tab.id === activeTab.id) {
                 if (activeTabIndex > 0) {
-                    this.appState.setActiveTab(this.appState.tabs[activeTabIndex - 1]);
+                    this.appState.setActiveTab(tabs[activeTabIndex - 1]);
                 } else {
-                    this.appState.setActiveTab(this.appState.tabs[0]);
+                    this.appState.setActiveTab(tabs[0]);
                 }
             } else {
                 this.appState.setActiveTab(activeTab);

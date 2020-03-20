@@ -114,20 +114,29 @@ body {
 }
 
 .tab-links .nav-item {
-  width: 150px;
   height: 35px;
-  padding: 5px 15px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  padding: 5px 31px 5px 15px;
   display: inline-block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  position: relative;
+}
+
+.close-tab-cross {
+  position: absolute;
+  right: 15px;
+  width: 11px;
+}
+
+.tab-links .nav-item:not(:hover) .close-tab-cross {
+  display: none;
+}
+
+.tab-links .nav-item.active .close-tab-cross {
+  display: inline;
 }
 
 .tab-links .nav-item.new-tab-link {
   width: 45px;
+  padding-right: 15px;
 }
 
 .close-tab-cross:hover {
