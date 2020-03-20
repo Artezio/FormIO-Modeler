@@ -79,7 +79,6 @@ function run() {
 }
 
 function attachAdvertisingModal() {
-    return;/// stub while developing advertising text.
     advertizingModalWrapper.style.display = '';
     advertizingModal.addEventListener('click', preventDetachAdvertizingModal, true)
     setTimeout(() => {
