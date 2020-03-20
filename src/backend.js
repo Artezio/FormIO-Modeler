@@ -88,7 +88,7 @@ class Backend {
             form.modified = new Date().toISOString();
             this.workspaceService.saveForm(form);
             tab.formSaved = true;
-            this.clientChanel.send('saveCurrentForm');
+            this.clientChanel.send('saveActiveTab');
         }
         if (formExists && tab.needReplaceForm) {
             const canReplace = this.dialog.confirmReplaceFile(form.path + '.json');
@@ -107,32 +107,30 @@ class Backend {
     }
 
     alertInvalidField(form) {
+        const invalidFields = [];
         if (!form.title) {
-            this.dialog.alert('Enter title to save form.');
-            this.clientChanel.send('focusFieldByName', 'title');
-            return;
+            invalidFields.push('title');
         }
         if (!form.name) {
-            this.dialog.alert('Enter name to save form.');
-            this.clientChanel.send('focusFieldByName', 'name');
-            return;
+            invalidFields.push('name');
         }
         if (!form.path) {
-            this.dialog.alert('Enter path to save form.');
-            this.clientChanel.send('focusFieldByName', 'path');
-            return;
+            invalidFields.push('path');
         }
+        if (!invalidFields.length) return;
+        this.dialog.alert(`Enter ${invalidFields.join(', ')} to save form.`);
+        this.clientChanel.send('focusFieldByName', invalidFields[0]);
     }
 
     closeApp() {
         this.closeAllTabs();
     }
 
-    _closeTab(tab, confirm) {
+    _closeTab(tab, confirmSave) {
         const appropriateTab = this.appState.tabs.find(t => t.id === tab.id);
         if (!appropriateTab) this.throwError('Client and Backend tabs don\'t match');
         if (!tab.formSaved) {
-            const answer = confirm();
+            const answer = confirmSave();
             switch (answer) {
                 case CONFIRM_CONSTANTS.CANCEL: {
                     this.throwError('Action canceled');
@@ -169,17 +167,25 @@ class Backend {
             } else {
                 this.appState.setActiveTab(activeTab);
             }
+            this.clientChanel.send('closeTab');
         } catch (err) {
             this.throwError(err);
         }
-
     }
 
     closeAllTabs() {
-        this.appState.tabs.forEach((tab, i) => {
-            console.log('log', i)
-            this.closeTab(tab)
+        const tabs = this.appState.tabs.slice();
+        const closedTabs = tabs.filter(tab => {
+            try {
+                this.closeTab(tab)
+                return true;
+            } catch (err) {
+                return false;
+            }
         });
+        if (closedTabs.length !== tabs.length) {
+            this.throwError('Unsuccessful!');
+        }
     }
 
     closeCurrentTab() {

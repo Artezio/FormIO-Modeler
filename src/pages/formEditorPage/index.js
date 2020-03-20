@@ -171,7 +171,7 @@ function getForms() {
 }
 
 function clarifySaveButtonDisable(tab) {
-    if (tab.formSaved) {
+    if (tab._formSaved) {
         disableSaveButton();
     } else {
         enableSaveButton();
@@ -186,10 +186,12 @@ function adjustForm(schema = {}) {
 
 function enableSaveButton() {
     toolBarButtons.saveActiveTab.disabled = false;
+    toolBarButtons.saveActiveTab.classList.remove('disabled');
 }
 
 function disableSaveButton() {
     toolBarButtons.saveActiveTab.disabled = true;
+    toolBarButtons.saveActiveTab.classList.add('disabled');
 }
 
 function getCustomComponentsDetails() {
@@ -263,10 +265,9 @@ function setFormDetails(form = {}) {
     })
 }
 
-function saveCurrentFormHandler(event, result = {}) {
+function saveActiveTabHandler(event, result = {}) {
     if (result.error) return;
-    $.notify(SAVED_MESSAGE, 'success');
-    disableSaveButton();
+    getTabs();
 }
 
 function focusFieldByNameHandler(event, result = {}) {
@@ -306,7 +307,7 @@ function closeTabHandler() {
 function subscribeOnEvents() {
     backendChanel.on('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
     backendChanel.on('getCurrentForm', getCurrentFormHandler);
-    backendChanel.on('saveCurrentForm', saveCurrentFormHandler);
+    backendChanel.on('saveActiveTab', saveActiveTabHandler);
     backendChanel.on('focusFieldByName', focusFieldByNameHandler);
     backendChanel.on('attachLoader', attachLoaderHandler);
     backendChanel.on('detachLoader', detachLoaderHandler);
@@ -321,7 +322,7 @@ function subscribeOnEvents() {
     return function () {
         backendChanel.off('getCustomComponentsDetails', getCustomComponentsDetailsHandler);
         backendChanel.off('getCurrentForm', getCurrentFormHandler);
-        backendChanel.off('saveCurrentForm', saveCurrentFormHandler);
+        backendChanel.off('saveActiveTab', saveActiveTabHandler);
         backendChanel.off('focusFieldByName', focusFieldByNameHandler);
         backendChanel.off('attachLoader', attachLoaderHandler);
         backendChanel.off('detachLoader', detachLoaderHandler);

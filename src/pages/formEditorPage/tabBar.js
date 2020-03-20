@@ -1,5 +1,7 @@
 const clearNode = require('../../util/clearNode');
 const BackendChanel = require('../../channels/backendChanel');
+const { NEW_FORM_NAME } = require('../../constants/clientConstants');
+const path = require('path');
 
 const backendChanel = new BackendChanel();
 
@@ -36,7 +38,7 @@ class TabBar {
         if (isActive) {
             tabLink.classList.add('active');
         }
-        const title = tab.savedFormPath ? tab.savedFormPath + '.json' : 'untitled';
+        const title = tab.savedFormPath ? path.basename(tab.savedFormPath + '.json') : NEW_FORM_NAME;
         tabLink.href = 'javascript:void(0)';
         tabLink.textContent = title;
         tabLink.title = title;
