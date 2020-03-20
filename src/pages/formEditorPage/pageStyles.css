@@ -24,9 +24,9 @@
 }
 
 .label-artezio {
-  position: absolute;
-  bottom: 56px;
-  right: 20px;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
 }
 
 body {
@@ -39,8 +39,8 @@ body {
   position: absolute;
   left: 50%;
   top: 40%;
-  margin: 0 -140px;
-  width: 270px;
+  margin: 0 -100px;
+  width: 230px;
   padding: 10px;
   background: white;
   border: solid 1px #aaa;
