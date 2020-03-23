@@ -32,7 +32,7 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "license": "./LICENSE-2.0.txt"
+      "license": "./LICENSE.txt"
     },
     "win": {
       "target": "nsis",
