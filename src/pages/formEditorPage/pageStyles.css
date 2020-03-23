@@ -126,7 +126,19 @@ body {
   position: relative;
 }
 
-.close-tab-cross {
+.tab-links .nav-item.new-tab-link {
+  width: 45px;
+  padding-right: 15px;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  color: #fff;
+  background-color: #6c757d;
+}
+
+.close-tab-cross,
+.unsaved-mark {
   position: absolute;
   right: 15px;
   width: 11px;
@@ -136,21 +148,22 @@ body {
   display: none;
 }
 
-.tab-links .nav-item.active .close-tab-cross {
+.tab-links .nav-item.active:not(.unsaved) .close-tab-cross {
   display: inline;
-}
-
-.tab-links .nav-item.new-tab-link {
-  width: 45px;
-  padding-right: 15px;
 }
 
 .close-tab-cross:hover {
   color: orange;
 }
 
-.nav-pills .nav-link.active,
-.nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #6c757d;
+/* .tab-links .nav-item.unsaved .unsaved-mark:not(:hover) {
+display: inline;
+} */
+.tab-links .nav-item.unsaved .unsaved-mark {
+  color: orange;
+}
+
+.tab-links .nav-item.unsaved:hover .unsaved-mark,
+.tab-links .nav-item:not(.unsaved) .unsaved-mark {
+  display: none;
 }

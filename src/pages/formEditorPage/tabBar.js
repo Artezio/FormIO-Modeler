@@ -5,13 +5,6 @@ const path = require('path');
 
 const backendChanel = new BackendChanel();
 
-const newTabLink = document.createElement('a');
-newTabLink.classList.add('nav-item', 'nav-link', 'new-tab-link');
-newTabLink.textContent = '+';
-newTabLink.title = "Create new form";
-newTabLink.href = 'javascript:void(0)';
-newTabLink.onclick = addNewTab;
-
 function addNewTab() {
     backendChanel.send('openNewForm');
 }
@@ -22,6 +15,34 @@ function setActiveTab(tab) {
 
 function closeTab(tab) {
     backendChanel.send('closeTab', tab);
+}
+
+function createNewTabLink() {
+    const newTabLink = document.createElement('a');
+    newTabLink.classList.add('nav-item', 'nav-link', 'new-tab-link');
+    newTabLink.textContent = '+';
+    newTabLink.title = "Create new form";
+    newTabLink.href = 'javascript:void(0)';
+    newTabLink.onclick = addNewTab;
+    return newTabLink;
+}
+
+function createCross(tab) {
+    const cross = document.createElement('span');
+    cross.innerHTML = '&#215;'
+    cross.classList.add('close-tab-cross');
+    cross.onclick = e => {
+        e.stopPropagation();
+        closeTab(tab)
+    };
+    return cross;
+}
+
+function createUnsavedMark() {
+    const unsavedMark = document.createElement('span');
+    unsavedMark.classList.add('unsaved-mark');
+    unsavedMark.innerHTML = '&#959;';
+    return unsavedMark;
 }
 
 class TabBar {
@@ -41,33 +62,28 @@ class TabBar {
         }
         const title = tab.savedFormPath ? path.basename(tab.savedFormPath + '.json') : NEW_FORM_NAME;
         tabLink.href = 'javascript:void(0)';
-        const span = document.createElement('span');
-        span.textContent = title;
         if (!tab._formSaved) {
-            tabLink.classList.add('text-danger');
+            tabLink.classList.add('unsaved');
         }
-        tabLink.append(span);
         tabLink.title = title;
         tabLink.onclick = () => {
             if (!$(tabLink).hasClass('active')) {
                 setActiveTab(tab)
             }
         };
-        const cross = document.createElement('span');
-        cross.innerHTML = '&#215;'
-        cross.classList.add('ml-2', 'close-tab-cross');
-        cross.onclick = e => {
-            e.stopPropagation();
-            closeTab(tab)
-        };
-        tabLink.append(cross);
+        const span = document.createElement('span');
+        span.textContent = title;
+        tabLink.append(span);
+        const cross = createCross(tab);
+        const unsavedMark = createUnsavedMark();
+        tabLink.append(unsavedMark, cross);
         return tabLink;
     }
 
     setActiveTabUnsaved() {
         if (this.activeTab) {
-            if (!this.activeTab.classList.contains('text-danger')) {
-                this.activeTab.classList.add('text-danger');
+            if (!this.activeTab.classList.contains('unsaved')) {
+                this.activeTab.classList.add('unsaved');
             }
         }
     }
@@ -75,7 +91,7 @@ class TabBar {
     setTabs(tabs) {
         clearNode(this.container);
         const tabLinks = tabs.map(tab => this._createTabLink(tab));
-        this.container.append(...tabLinks, newTabLink);
+        this.container.append(...tabLinks, createNewTabLink());
     }
 }
 
