@@ -145,7 +145,14 @@ class TabBar {
 
     scrollToActiveTab() {
         this.activeTab.scrollIntoView();
-        const diff = Math.ceil(this.activeTab.offsetWidth - (this.container.offsetWidth - this.activeTab.offsetLeft));
+        const containerWeight = this.container.getBoundingClientRect().width;
+        const activeTabLeftPosition = this.activeTab.getBoundingClientRect().x;
+        const activeTabWeight = this.activeTab.getBoundingClientRect().width;
+        if (activeTabLeftPosition < 0) {
+            this.container.scroll(0, 0);
+            return;
+        }
+        const diff = Math.ceil(activeTabWeight - (containerWeight - activeTabLeftPosition));
         if (diff > 0) {
             this.container.scroll(diff, 0);
         }
