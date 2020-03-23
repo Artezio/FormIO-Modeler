@@ -122,6 +122,10 @@ class Backend {
         this.clientChanel.send('focusFieldByName', invalidFields[0]);
     }
 
+    saveState() {
+        this.appState.saveState();
+    }
+
     closeApp() {
         this.closeAllTabs();
     }

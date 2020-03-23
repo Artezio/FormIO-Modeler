@@ -1,18 +1,76 @@
 const fs = require('fs');
 const path = require('path');
-const uuid = require('uuid/v1');
-const isTab = require('./util/isTab');
-const { PATH_TO_WORKSPACES_INFO, MAX_RECENT_WORKSPACES, FORM_TYPE, TABS_INFO_FILE_NAME } = require('./constants/backendConstants');
+const { PATH_TO_WORKSPACES_INFO, MAX_RECENT_WORKSPACES, TABS_INFO_FILE_NAME } = require('./constants/backendConstants');
 const Tab = require('./tab');
+const isForm = require('./util/isForm');
 
 class AppState {
     constructor(workspaceService) {
         this.workspaceService = workspaceService;
         this.recentWorkspaces = [];
-        this.form = {};
-        this._formSaved = true;
         this.tabs = [];
-        this._initRecentWorkspaces();
+        this.storedFormPathsByWorkspaceMap = new Map();
+        // this._initRecentWorkspaces();
+        this._init();
+    }
+
+    _init() {
+        try {
+            let appState = fs.readFileSync(PATH_TO_WORKSPACES_INFO, { encoding: 'utf8' });
+            appState = JSON.parse(appState);
+            let recentWorkspaces = appState.recentWorkspaces || [];
+            recentWorkspaces = recentWorkspaces.filter(workspace => fs.existsSync(workspace));
+            recentWorkspaces.slice(0, MAX_RECENT_WORKSPACES).forEach(workspace => {
+                this.recentWorkspaces.push(workspace);
+            })
+            for (let workspace in appState.storedFormPathsByWorkspace) {
+                this.storedFormPathsByWorkspaceMap.set(workspace, appState.storedFormPathsByWorkspace[workspace]);
+            }
+            this._initTabs();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    _initTabs() {
+        this.tabs = [];
+        let formPaths = this.storedFormPathsByWorkspaceMap.get(this.currentWorkspace) || [];
+        formPaths.forEach(formPath => {
+            try {
+                const form = this.workspaceService.getFormByAbsolutePath(path.resolve(this.currentWorkspace, formPath));
+                if (!isForm(form)) throw new Error(`Form ${formPath}.json is Incorrect`);
+                const tab = new Tab({ form });
+                this.addTab(tab);
+            } catch (err) {
+                console.info(err);
+            }
+        })
+        this._clarifyActiveTab();
+    }
+
+    saveState() {
+        if (this.currentWorkspace) {
+            const formPaths = this.tabs.map(tab => tab.form && tab.form.path && tab.form.path + '.json').filter(Boolean);
+            this.storedFormPathsByWorkspaceMap.set(this.currentWorkspace, formPaths);
+        }
+        this._saveState();
+    }
+
+    _saveState() {
+        try {
+            let data = {
+                recentWorkspaces: this.recentWorkspaces,
+                storedFormPathsByWorkspace: {}
+            }
+            for (let x of this.storedFormPathsByWorkspaceMap.entries()) {
+                data.storedFormPathsByWorkspace[x[0]] = x[1];
+            }
+            data = JSON.stringify(data);
+            fs.writeFileSync(PATH_TO_WORKSPACES_INFO, data);
+
+        } catch (err) {
+            console.info(err);
+        }
     }
 
     setActiveTab(tab) {
@@ -86,28 +144,12 @@ class AppState {
         }
     }
 
-    _initTabs() {
-        this.tabs = [];
-        try {
-            const tabs = fs.readFileSync(path.resolve(this.currentWorkspace, TABS_INFO_FILE_NAME), { encoding: 'utf8' });
-            tabs = JSON.parse(tabs);
-            tabs = tabs.filter(isTab);
-            tabs = tabs.filter(tab => isTab(tab) && tab.form && fs.existsSync(path.resolve(this.currentWorkspace, tab.form.formPath)));
-            tabs = tabs.map(tab => new Map(tab));
-            this.addTab(tabs);
-            this._clarifyActiveTab();
-        } catch (err) {
-            console.info(err);
-        }
-    }
-
     setCurrentWorkspace(workspace) {
         this.currentWorkspace = workspace;
         this._addRecentWorkspace(workspace);
         this.workspaceService.setCurrentWorkspace(workspace);
-        this.saveRecentWorkspaces();
+        // this.saveRecentWorkspaces();
         this._initTabs();
-        // this.currentFormSaved = true;
     }
 
     saveRecentWorkspaces() {

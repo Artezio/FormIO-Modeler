@@ -5,7 +5,7 @@ class Tab {
     constructor(tab = {}) {
         this.id = tab.id || uuid();
         this.form = tab.form || {};
-        this._formSaved = true;
+        this._formSaved = tab.formSaved !== undefined ? !!tab.formSaved : true;
         this.savedFormPath = this.form.path;
     }
 

@@ -56,6 +56,7 @@ function createMainWindow() {
         }
     }).on('close', e => {
         try {
+            backend.saveState();
             backend.closeApp();
         } catch (err) {
             e.preventDefault();
@@ -172,9 +173,15 @@ function changeCurrentWorkspaceHandler() {
     try {
         backend.changeCurrentWorkspace();
         setMenu();
-        showStartPage();
         setAppTitle();
+        const tabs = backend.getTabs();
+        if (tabs.length) {
+            showFormEditorPage();
+        } else {
+            showStartPage();
+        }
     } catch (err) {
+        clientChanel.sendError('changeCurrentWorkspace', err);
         console.error(err);
     }
 }
@@ -185,7 +192,12 @@ function setCurrentWorkspaceHandler(event, result = {}) {
         backend.setCurrentWorkspace(workspace);
         setMenu();
         setAppTitle();
-        clientChanel.send('setCurrentWorkspace', workspace);
+        const tabs = backend.getTabs();
+        if (tabs.length) {
+            showFormEditorPage();
+        } else {
+            clientChanel.send('setCurrentWorkspace', workspace);
+        }
     } catch (err) {
         clientChanel.sendError('setCurrentWorkspace', err);
     }
