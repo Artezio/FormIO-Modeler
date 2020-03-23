@@ -4,15 +4,16 @@ const { NEW_FORM_NAME } = require('../../constants/clientConstants');
 const path = require('path');
 
 const backendChanel = new BackendChanel();
+const tabLinksContainer = document.getElementById('tab-links');
+const leftScroll = document.getElementById('left-scroll');
+const rightScroll = document.getElementById('right-scroll');
 
 function addNewTab() {
     backendChanel.send('openNewForm');
 }
-
 function setActiveTab(tab) {
     backendChanel.send('setActiveTab', tab);
 }
-
 function closeTab(tab) {
     backendChanel.send('closeTab', tab);
 }
@@ -50,6 +51,52 @@ class TabBar {
         this.container = container;
         this._newTab = { title: '+' };
         this.tabs = [this._newTab];
+        this.scrollDelay = 500;
+        this.scrollSpeed = 100;
+        this._initDomEventHandlers();
+    }
+
+    scrollToLeft(x) {
+        this.container.scrollLeft -= x;
+    }
+
+    scrollToRight(x) {
+        this.container.scrollLeft += x;
+    }
+
+    _initDomEventHandlers() {
+        window.onresize = this.handleResize.bind(this);
+        let leftScrollIntervalId;
+        let leftScrollTimeoutId;
+        let rightScrollIntervalId;
+        let rightScrollTimeoutId;
+        rightScroll.onmousedown = () => {
+            this.scrollToRight(10);
+            rightScrollTimeoutId = setTimeout(() => {
+                rightScrollIntervalId = setInterval(() => this.scrollToRight(10), this.scrollSpeed);
+            }, this.scrollDelay);
+        }
+        rightScroll.onmouseup = () => {
+            clearTimeout(rightScrollTimeoutId);
+            clearInterval(rightScrollIntervalId);
+        }
+        leftScroll.onmousedown = () => {
+            this.scrollToLeft(10);
+            leftScrollTimeoutId = setTimeout(() => {
+                leftScrollIntervalId = setInterval(() => this.scrollToLeft(10), this.scrollSpeed);
+            }, this.scrollDelay);
+        }
+        leftScroll.onmouseup = () => {
+            clearTimeout(leftScrollTimeoutId);
+            clearInterval(leftScrollIntervalId);
+        }
+        this.container.onwheel = e => {
+            if (e.deltaY > 0) {
+                this.scrollToRight(50);
+            } else {
+                this.scrollToLeft(50);
+            }
+        }
     }
 
     _createTabLink(tab = {}) {
@@ -92,6 +139,36 @@ class TabBar {
         clearNode(this.container);
         const tabLinks = tabs.map(tab => this._createTabLink(tab));
         this.container.append(...tabLinks, createNewTabLink());
+        this.handleResize();
+        this.scrollToActiveTab();
+    }
+
+    scrollToActiveTab() {
+        this.activeTab.scrollIntoView();
+        const diff = Math.ceil(this.activeTab.offsetWidth - (this.container.offsetWidth - this.activeTab.offsetLeft));
+        if (diff > 0) {
+            this.container.scroll(diff, 0);
+        }
+    }
+
+    showScrollButtons() {
+        leftScroll.style.display = '';
+        rightScroll.style.display = '';
+    }
+
+    hideScrollButtons() {
+        leftScroll.style.display = 'none';
+        rightScroll.style.display = 'none';
+    }
+
+    handleResize(e) {
+        const visibleWidth = this.container.offsetWidth;
+        const realWidth = this.container.scrollWidth;
+        if (realWidth > visibleWidth) {
+            this.showScrollButtons();
+        } else {
+            this.hideScrollButtons();
+        }
     }
 }
 

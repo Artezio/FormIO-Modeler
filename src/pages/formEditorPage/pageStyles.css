@@ -167,3 +167,50 @@ display: inline;
 .tab-links .nav-item:not(.unsaved) .unsaved-mark {
   display: none;
 }
+
+.tab-links {
+  display: flex;
+  overflow: hidden;
+  flex: initial;
+  flex-shrink: 0;
+  height: 35px;
+}
+
+.tab-links .nav {
+  flex-grow: 1;
+  order: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.tab-links .left-scroll {
+  order: -1;
+}
+
+.tab-links .right-scroll {
+  order: 1;
+}
+
+.tab-links .left-scroll,
+.tab-links .right-scroll {
+  border-bottom: 1px solid #dee2e6;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.tab-links .left-scroll:hover,
+.tab-links .right-scroll:hover {
+  background-color: lightgray;
+}
+
+.tab-links .left-scroll:active,
+.tab-links .right-scroll:active {
+  background-color: gray;
+}
+
+.tab-links .left-scroll::selection,
+.tab-links .right-scroll::selection {
+  background: transparent;
+}
