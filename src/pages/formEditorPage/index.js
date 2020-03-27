@@ -4,7 +4,6 @@ const $ = require('jquery');
 const initJQueryNotify = require('../../../libs/notify');
 const FormioFacade = require('./formioFacade');
 const JsonViewerFacade = require('./jsonViewerFacade');
-const { SAVED_MESSAGE } = require('../../constants/clientConstants')
 const getLoader = require('../../util/getLoader');
 const BackendChanel = require('../../channels/backendChanel');
 const TabBar = require('./tabBar');
@@ -12,7 +11,11 @@ const TabBar = require('./tabBar');
 require('bootstrap');
 initJQueryNotify();
 
-
+const welcomeTab = document.getElementById('welcome-tab');
+const welcomeTabButtons = {
+    createNewForm: document.getElementById('welcome-tab__create-new-form'),
+    openForm: document.getElementById('welcome-tab__open-form'),
+}
 const detailsForm = document.forms.formDetails;
 const tabBarContainer = document.getElementById('tab-bar');
 const $viewDataTabLink = $(document.getElementById('view-data-tab'));
@@ -56,13 +59,15 @@ $('body').on('click', 'a', (event) => {
 function run() {
     const unsubscribe = subscribeOnEvents();
     detailsForm.addEventListener('input', changeFormDetailsHandler);
+    detailsForm.onsubmit = e => e.preventDefault();
     toolBarButtons.openNewForm.addEventListener('click', openNewForm);
     toolBarButtons.openForm.addEventListener('click', openForm);
     toolBarButtons.saveActiveTab.addEventListener('click', saveActiveTab);
     toolBarButtons.changeCurrentWorkspace.addEventListener('click', changeCurrentWorkspace);
     toolBarButtons.registerCustomComponents.addEventListener('click', registerCustomComponents);
     labelArtezioLink.addEventListener('click', attachAdvertisingModal);
-    detailsForm.onsubmit = e => e.preventDefault();
+    welcomeTabButtons.createNewForm.addEventListener('click', openNewForm);
+    welcomeTabButtons.openForm.addEventListener('click', openForm);
     document.addEventListener('unload', () => {
         unsubscribe();
         formioFacade.unsubscribe();
@@ -73,6 +78,8 @@ function run() {
         toolBarButtons.changeCurrentWorkspace.removeEventListener('click', changeCurrentWorkspace);
         toolBarButtons.registerCustomComponents.removeEventListener('click', registerCustomComponents);
         labelArtezioLink.removeEventListener('click', attachAdvertisingModal);
+        welcomeTabButtons.createNewForm.removeEventListener('click', openNewForm);
+        welcomeTabButtons.openForm.removeEventListener('click', openForm);
     });
 
     getCurrentWorkspace();
@@ -170,7 +177,7 @@ function getForms() {
 }
 
 function clarifySaveButtonDisable(tab) {
-    if (tab._formSaved) {
+    if (!tab || tab._formSaved) {
         disableSaveButton();
     } else {
         enableSaveButton();
@@ -214,6 +221,14 @@ function showData() {
     $viewDataTabLink.tab('show');
 }
 
+function hideWelcomeTab() {
+    welcomeTab.style.display = 'none';
+}
+
+function showWelcomeTab() {
+    welcomeTab.style.display = '';
+}
+
 function schemaChangedHandler(schema = {}) {
     jsonViewerFacade.hide();
     formioFacade.detachForm();
@@ -242,7 +257,12 @@ function getTabsHandler(event, response = {}) {
     tabBar.setTabs(tabs);
     const activeTab = tabs.find(tab => tab.isActive);
     clarifySaveButtonDisable(activeTab);
-    getCurrentForm();
+    if (tabs.length) {
+        hideWelcomeTab();
+        getCurrentForm();
+    } else {
+        showWelcomeTab();
+    }
 }
 
 function switchTabHandler() {

@@ -135,7 +135,7 @@ class TabBar {
         }
     }
 
-    setTabs(tabs) {
+    setTabs(tabs = []) {
         clearNode(this.container);
         const tabLinks = tabs.map(tab => this._createTabLink(tab));
         this.container.append(...tabLinks, createNewTabLink());

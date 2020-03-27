@@ -48,7 +48,7 @@ class Backend {
     }
 
     openNewForm() {
-        const tab = new Tab(null, this.getCurrentWorkspace());
+        const tab = new Tab(undefined, this.getCurrentWorkspace());
         this.appState.addTab(tab);
         this.appState.setActiveTab(tab);
     }

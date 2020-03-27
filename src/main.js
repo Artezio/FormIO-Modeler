@@ -174,12 +174,7 @@ function changeCurrentWorkspaceHandler() {
         backend.changeCurrentWorkspace();
         setMenu();
         setAppTitle();
-        const tabs = backend.getTabs();
-        if (tabs.length) {
-            showFormEditorPage();
-        } else {
-            showStartPage();
-        }
+        showFormEditorPage();
     } catch (err) {
         clientChanel.sendError('changeCurrentWorkspace', err);
         console.error(err);
@@ -192,12 +187,7 @@ function setCurrentWorkspaceHandler(event, result = {}) {
         backend.setCurrentWorkspace(workspace);
         setMenu();
         setAppTitle();
-        const tabs = backend.getTabs();
-        if (tabs.length) {
-            showFormEditorPage();
-        } else {
-            clientChanel.send('setCurrentWorkspace', workspace);
-        }
+        showFormEditorPage();
     } catch (err) {
         clientChanel.sendError('setCurrentWorkspace', err);
     }
@@ -334,10 +324,6 @@ function closeTabHandler(event, response) {
     try {
         if (!tab) throw new Error('Backend and Client tabs don\'t match!');
         backend.closeTab(tab);
-        if (backend.appState.tabs.length === 0) {
-            showStartPage();
-            return;
-        }
         clientChanel.send('closeTab');
     } catch (err) {
         clientChanel.sendError('closeTab', err);
