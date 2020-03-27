@@ -128,10 +128,9 @@ class TabBar {
     }
 
     setActiveTabUnsaved() {
-        if (this.activeTab) {
-            if (!this.activeTab.classList.contains('unsaved')) {
-                this.activeTab.classList.add('unsaved');
-            }
+        if (!this.activeTab) return;
+        if (!this.activeTab.classList.contains('unsaved')) {
+            this.activeTab.classList.add('unsaved');
         }
     }
 
@@ -144,6 +143,7 @@ class TabBar {
     }
 
     scrollToActiveTab() {
+        if (!this.activeTab) return;
         this.activeTab.scrollIntoView();
         const containerWeight = this.container.getBoundingClientRect().width;
         const activeTabLeftPosition = this.activeTab.getBoundingClientRect().x;
