@@ -23,20 +23,20 @@ class Backend {
     }
 
     openFirstForm(form) {
-        const tab = new Tab({ form });
+        const tab = new Tab({ form }, this.getCurrentWorkspace());
         this.appState.addTab(tab);
     }
 
-    openForm(form) {
+    openForm() {
         const formAbsolutePath = this.dialog.selectJsonFile();
         if (!formAbsolutePath) {
             this.throwError('Action canceled');
         }
         try {
             const form = this.workspaceService.getFormByAbsolutePath(formAbsolutePath);
-            let tab = this.appState.tabs.find(tab => tab.form.path === form.path);
+            let tab = this.appState.tabs.find(tab => tab.savedFormPath === formAbsolutePath);
             if (!tab) {
-                tab = new Tab({ form, id: formAbsolutePath })
+                tab = new Tab({ form, id: formAbsolutePath, formAbsolutePath: formAbsolutePath }, this.getCurrentWorkspace())
                 this.appState.addTab(tab);
             }
             this.appState.setActiveTab(tab);
@@ -48,7 +48,7 @@ class Backend {
     }
 
     openNewForm() {
-        const tab = new Tab();
+        const tab = new Tab(null, this.getCurrentWorkspace());
         this.appState.addTab(tab);
         this.appState.setActiveTab(tab);
     }

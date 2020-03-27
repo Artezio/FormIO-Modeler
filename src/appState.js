@@ -34,12 +34,12 @@ class AppState {
 
     _initTabs() {
         this.tabs = [];
-        let formPaths = this.storedFormPathsByWorkspaceMap.get(this.currentWorkspace) || [];
-        formPaths.forEach(formPath => {
+        let formAbsolutePaths = this.storedFormPathsByWorkspaceMap.get(this.currentWorkspace) || [];
+        formAbsolutePaths.forEach(formAbsolutePath => {
             try {
-                const form = this.workspaceService.getFormByAbsolutePath(path.resolve(this.currentWorkspace, formPath));
-                if (!isForm(form)) throw new Error(`Form ${formPath}.json is Incorrect`);
-                const tab = new Tab({ form });
+                const form = this.workspaceService.getFormByAbsolutePath(path.resolve(this.currentWorkspace, formAbsolutePath));
+                if (!isForm(form)) throw new Error(`Form ${path.basename(formAbsolutePath)} is Incorrect`);
+                const tab = new Tab({ form, formAbsolutePath: formAbsolutePath }, this.currentWorkspace);
                 this.addTab(tab);
             } catch (err) {
                 console.info(err);
@@ -50,8 +50,9 @@ class AppState {
 
     saveState() {
         if (this.currentWorkspace) {
-            const formPaths = this.tabs.map(tab => tab.form && tab.form.path && tab.form.path + '.json').filter(Boolean);
-            this.storedFormPathsByWorkspaceMap.set(this.currentWorkspace, formPaths);
+            let formAbsolutePaths = this.tabs.map(tab => tab.savedFormPath).filter(Boolean);
+            formAbsolutePaths = formAbsolutePaths.filter((formAbsolutePath, i) => formAbsolutePaths.some((formPath, j) => i !== j && formPath === formAbsolutePath));
+            this.storedFormPathsByWorkspaceMap.set(this.currentWorkspace, formAbsolutePaths);
         }
         this._saveState();
     }

@@ -107,7 +107,7 @@ class TabBar {
             tabLink.classList.add('active');
             this.activeTab = tabLink;
         }
-        const title = tab.savedFormPath ? path.basename(tab.savedFormPath + '.json') : NEW_FORM_NAME;
+        const title = tab.savedFormPath ? path.basename(tab.savedFormPath) : NEW_FORM_NAME;
         tabLink.href = 'javascript:void(0)';
         if (!tab._formSaved) {
             tabLink.classList.add('unsaved');

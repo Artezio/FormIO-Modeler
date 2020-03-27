@@ -1,12 +1,14 @@
 const uuid = require('uuid/v1');
 const { FORM_TYPE } = require('./constants/backendConstants');
+const path = require('path');
 
 class Tab {
-    constructor(tab = {}) {
+    constructor(tab = {}, workspace) {
+        this.workspace = workspace;
         this.id = tab.id || uuid();
         this.form = tab.form || {};
         this._formSaved = tab.formSaved !== undefined ? !!tab.formSaved : true;
-        this.savedFormPath = this.form.path;
+        this.savedFormPath = tab.formAbsolutePath || this.form.path;
     }
 
     get formSaved() {
@@ -14,14 +16,14 @@ class Tab {
     }
 
     set formSaved(formSaved) {
-        if (formSaved) {
-            this.savedFormPath = this.form.path;
+        if (formSaved && this.form.path) {
+            this.savedFormPath = path.resolve(this.workspace, this.form.path + '.json');
         }
         this._formSaved = formSaved;
     }
 
     get needReplaceForm() {
-        return this.savedFormPath !== this.form.path;
+        return this.savedFormPath !== path.resolve(this.workspace, this.form.path + '.json');
     }
 
     adjustForm(changes = {}) {
