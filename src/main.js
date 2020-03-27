@@ -149,13 +149,19 @@ function toggleDevTools(item, focusedWindow) {
     }
 }
 
-function setAppTitle() {
-    const currentWorkspace = backend.getCurrentWorkspace();
+function setAppTitle(currentWorkspace) {
     if (currentWorkspace) {
         mainWindow.setTitle(`${BASE_TITLE} - [${currentWorkspace}]`);
     } else {
         mainWindow.setTitle(BASE_TITLE);
     }
+}
+
+function setCurrentWorkspace() {
+    const currentWorkspace = backend.getCurrentWorkspace();
+    setMenu();
+    setAppTitle(currentWorkspace);
+    showFormEditorPage();
 }
 
 function registerCustomComponentsHandler() {
@@ -172,9 +178,7 @@ function registerCustomComponentsHandler() {
 function changeCurrentWorkspaceHandler() {
     try {
         backend.changeCurrentWorkspace();
-        setMenu();
-        setAppTitle();
-        showFormEditorPage();
+        setCurrentWorkspace();
     } catch (err) {
         clientChanel.sendError('changeCurrentWorkspace', err);
         console.error(err);
@@ -185,9 +189,7 @@ function setCurrentWorkspaceHandler(event, result = {}) {
     const workspace = result.payload;
     try {
         backend.setCurrentWorkspace(workspace);
-        setMenu();
-        setAppTitle();
-        showFormEditorPage();
+        setCurrentWorkspace();
     } catch (err) {
         clientChanel.sendError('setCurrentWorkspace', err);
     }
