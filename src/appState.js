@@ -51,7 +51,7 @@ class AppState {
     saveState() {
         if (this.currentWorkspace) {
             let formAbsolutePaths = this.tabs.map(tab => tab.savedFormPath).filter(Boolean);
-            formAbsolutePaths = formAbsolutePaths.filter((formAbsolutePath, i) => formAbsolutePaths.some((formPath, j) => i !== j && formPath === formAbsolutePath));
+            formAbsolutePaths = formAbsolutePaths.filter((formAbsolutePath, i) => !formAbsolutePaths.some((formPath, j) => i !== j && formPath === formAbsolutePath));
             this.storedFormPathsByWorkspaceMap.set(this.currentWorkspace, formAbsolutePaths);
         }
         this._saveState();
