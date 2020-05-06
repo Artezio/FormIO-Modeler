@@ -14,6 +14,7 @@ let unsubscribe;
 let formBuilderPageOpened = false;
 
 function prepareApp() {
+    app.name = 'FormIO Modeler';
     app.on('ready', () => {
         run();
     })
@@ -24,7 +25,9 @@ function prepareApp() {
         }
     })
     app.on('activate', () => {
-        run();
+        if (BrowserWindow.getAllWindows().length === 0) {
+            run();
+        }
     });
 }
 
@@ -61,7 +64,7 @@ function createMainWindow() {
         } catch (err) {
             e.preventDefault();
         }
-    })
+    });
 }
 
 function showPage(path) {
@@ -87,7 +90,20 @@ function showFormEditorPage() {
 function setMenu() {
     const menuTemplate = getMenuTemplate();
     if (process.platform === 'darwin') {
-        menuTemplate.unshift({});
+        menuTemplate.unshift({
+            label: app.name,
+            submenu: [
+                { role: 'about' },
+                { type: 'separator' },
+                { role: 'services' },
+                { type: 'separator' },
+                { role: 'hide' },
+                { role: 'hideothers' },
+                { role: 'unhide' },
+                { type: 'separator' },
+                { role: 'quit' }
+              ]
+        });
     }
     const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);

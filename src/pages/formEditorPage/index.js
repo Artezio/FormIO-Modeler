@@ -52,8 +52,9 @@ const jsonViewerFacade = new JsonViewerFacade(jsonContainer);
 
 $('body').on('click', 'a', (event) => {
     event.preventDefault();
-    let link = event.currentTarget.href;
-    link && shell.openExternal(link);
+    const link = event.currentTarget.href;
+    const isHashLink = link.startWith('#');
+    link && !isHashLink && shell.openExternal(link);
 });
 
 function run() {
