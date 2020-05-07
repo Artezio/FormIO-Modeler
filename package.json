@@ -6,7 +6,7 @@
   "dependencies": {
     "bootstrap": "^4.4.1",
     "formiojs": "4.9.22",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "jsdom": "^16.2.0",
     "jsdom-global": "^3.0.2",
     "popper.js": "^1.16.0",
