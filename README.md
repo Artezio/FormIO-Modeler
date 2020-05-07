@@ -6,7 +6,7 @@ FormIO Modeler is standalone modeler for forms in [FormIO](https://www.form.io/)
 
 # Installation
 
-1) Installers are in ["releases" section](https://github.com/Artezio/FormIO-editor/releases).
+1) Installer is in [releases](https://github.com/Artezio/FormIO-editor/releases/latest).
 
 # Usage
 
