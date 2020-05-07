@@ -50,11 +50,9 @@ const formioFacade = new FormioFacade(builderContainer, formContainer, {
 });
 const jsonViewerFacade = new JsonViewerFacade(jsonContainer);
 
-$('body').on('click', 'a', (event) => {
+$(document).on('click', 'a[href^="http"]', function(event) {
     event.preventDefault();
-    const link = event.currentTarget.href;
-    const isHashLink = link.startWith('#');
-    link && !isHashLink && shell.openExternal(link);
+    shell.openExternal(this.href);
 });
 
 function run() {
