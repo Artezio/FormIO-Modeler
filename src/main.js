@@ -1,4 +1,5 @@
 const { app, BrowserWindow, Menu, dialog } = require('electron');
+const contextMenu = require('electron-context-menu');
 const { format } = require('url');
 const ElectronDialog = require('./dialog');
 const Backend = require('./backend');
@@ -12,6 +13,14 @@ let mainWindow;
 let unsubscribe;
 
 let formBuilderPageOpened = false;
+
+contextMenu({
+    shouldShowMenu: (e, params) => params.isEditable,
+    showLookUpSelection: false,
+    showSearchWithGoogle: false,
+    showInspectElement: false, 
+	prepend: () => []
+});
 
 function prepareApp() {
     app.name = 'FormIO Modeler';
@@ -110,6 +119,7 @@ function setMenu() {
 }
 
 function getMenuTemplate() {
+    const isMac = process.platform === 'darwin'
     return [
         {
             label: 'File',
@@ -139,6 +149,34 @@ function getMenuTemplate() {
             ]
         },
         {
+            label: 'Edit',
+            submenu: [
+              { role: 'undo' },
+              { role: 'redo' },
+              { type: 'separator' },
+              { role: 'cut' },
+              { role: 'copy' },
+              { role: 'paste' },
+              ...(isMac ? [
+                { role: 'pasteAndMatchStyle' },
+                { role: 'delete' },
+                { role: 'selectAll' },
+                { type: 'separator' },
+                {
+                  label: 'Speech',
+                  submenu: [
+                    { role: 'startspeaking' },
+                    { role: 'stopspeaking' }
+                  ]
+                }
+              ] : [
+                { role: 'delete' },
+                { type: 'separator' },
+                { role: 'selectAll' }
+              ])
+            ]
+          },
+        {
             label: 'Components',
             submenu: [
                 {
@@ -158,6 +196,7 @@ function getMenuTemplate() {
         }
     ]
 }
+
 
 function toggleDevTools(item, focusedWindow) {
     if (focusedWindow) {
