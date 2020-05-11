@@ -18,8 +18,8 @@ contextMenu({
     shouldShowMenu: (e, params) => params.isEditable,
     showLookUpSelection: false,
     showSearchWithGoogle: false,
-    showInspectElement: false, 
-	prepend: () => []
+    showInspectElement: false,
+    prepend: () => []
 });
 
 function prepareApp() {
@@ -111,7 +111,7 @@ function setMenu() {
                 { role: 'unhide' },
                 { type: 'separator' },
                 { role: 'quit' }
-              ]
+            ]
         });
     }
     const menu = Menu.buildFromTemplate(menuTemplate);
@@ -151,31 +151,28 @@ function getMenuTemplate() {
         {
             label: 'Edit',
             submenu: [
-              { role: 'undo' },
-              { role: 'redo' },
-              { type: 'separator' },
-              { role: 'cut' },
-              { role: 'copy' },
-              { role: 'paste' },
-              ...(isMac ? [
-                { role: 'pasteAndMatchStyle' },
-                { role: 'delete' },
-                { role: 'selectAll' },
+                { role: 'undo' },
+                { role: 'redo' },
                 { type: 'separator' },
-                {
-                  label: 'Speech',
-                  submenu: [
-                    { role: 'startspeaking' },
-                    { role: 'stopspeaking' }
-                  ]
-                }
-              ] : [
-                { role: 'delete' },
-                { type: 'separator' },
-                { role: 'selectAll' }
-              ])
+                { role: 'cut' },
+                { role: 'copy' },
+                { role: 'paste' },
+                ...(isMac ? [
+                    { role: 'selectAll' },
+                    { type: 'separator' },
+                    {
+                        label: 'Speech',
+                        submenu: [
+                            { role: 'startspeaking' },
+                            { role: 'stopspeaking' }
+                        ]
+                    }
+                ] : [
+                        { type: 'separator' },
+                        { role: 'selectAll' }
+                    ])
             ]
-          },
+        },
         {
             label: 'Components',
             submenu: [
