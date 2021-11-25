@@ -30,6 +30,10 @@ jobs:
         with:
           node-version: '16.x'
           cache: 'npm'
+      - name: 'Automated Version Bump'
+        uses: 'phips28/gh-action-bump-version@master'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm ci
       - run: npm run ${{ matrix.task }}
         env:
