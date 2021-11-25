@@ -6,7 +6,7 @@
   "dependencies": {
     "bootstrap": "^4.4.1",
     "electron-context-menu": "^2.0.0",
-    "formiojs": "4.9.22",
+    "formiojs": "^4.13.9",
     "jquery": "^3.5.1",
     "jsdom": "^16.2.0",
     "jsdom-global": "^3.0.2",
