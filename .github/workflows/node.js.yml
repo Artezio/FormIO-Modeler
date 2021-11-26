@@ -1,9 +1,9 @@
 name: Node.js CI
 
 on:
-  push:
+  create:
     tags:
-      - 0.*
+      - '*'
 
 jobs:
   build:
