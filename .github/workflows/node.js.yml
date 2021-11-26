@@ -63,9 +63,8 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v2
-      - run: echo ${{ needs.bumpVersion.outputs.tag }}
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: '*'
+          files: 'artifact/*'
           tag_name: ${{ needs.bumpVersion.outputs.tag }}
