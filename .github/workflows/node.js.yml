@@ -3,7 +3,7 @@ name: Node.js CI
 on:
   push:
     tags:
-      - 0.**
+      - v**
 
 jobs:
   build:
@@ -48,4 +48,4 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: '*'
+          files: '**'
