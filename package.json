@@ -1,6 +1,6 @@
 {
   "name": "FormIO-Modeler",
-  "version": "0.3.20",
+  "version": "0.3.21",
   "main": "./index.js",
   "license": "MIT",
   "dependencies": {
