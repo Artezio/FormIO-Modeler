@@ -1,0 +1,15 @@
+name: Add tag
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  bumpVersion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Automated Version Bump'
+        uses: 'phips28/gh-action-bump-version@master'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
