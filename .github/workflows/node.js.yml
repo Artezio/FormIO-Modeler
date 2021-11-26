@@ -40,6 +40,7 @@ jobs:
             paths: dist/*.AppImage
     steps:
       - uses: actions/checkout@v2
+      - run: git pull origin master
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
@@ -60,6 +61,7 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v2
+      - run: echo ${{ job.bumpVersion.outouts.tag }}
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
