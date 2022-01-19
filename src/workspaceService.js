@@ -70,7 +70,7 @@ class WorkspaceService {
             if (path.basename(form.path) !== form.path) {
                 fs.mkdirSync(this._getPathByBaseName(path.dirname(form.path)), { recursive: true });
             }
-            fs.writeFileSync(this._getFormPathByPathField(form.path), JSON.stringify(form, null, 4));
+            fs.writeFileSync(this._getFormPathByPathField(form.path), JSON.stringify(form, null, 2));
         } catch (err) {
             this.throwError(err);
         }
