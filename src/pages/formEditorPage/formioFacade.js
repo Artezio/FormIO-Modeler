@@ -23,7 +23,7 @@ class FormioFacade {
     }
 
     get builderOptions() {
-        const customComponentNames = [...this.customComponentNames.values(), 'iframe'];
+        const customComponentNames = [...this.customComponentNames.values()];
         if (customComponentNames.length) {
             const components = customComponentNames.reduce((components, name) => {
                 components[name] = true;
