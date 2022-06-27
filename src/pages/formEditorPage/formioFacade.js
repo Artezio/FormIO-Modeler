@@ -4,6 +4,8 @@ const clearNode = require('../../util/clearNode');
 const $ = require('jquery');
 const initJQueryNotify = require('../../../libs/notify');
 const isComponent = require('../../util/isComponent');
+const { customComponents } = require('hes-formio-components');
+const customComponentsKeys = Object.keys(customComponents);
 
 if (!$.notify) {
     initJQueryNotify();
@@ -21,7 +23,7 @@ class FormioFacade {
     }
 
     get builderOptions() {
-        const customComponentNames = [...this.customComponentNames.values()];
+        const customComponentNames = [...this.customComponentNames.values(), 'iframe'];
         if (customComponentNames.length) {
             const components = customComponentNames.reduce((components, name) => {
                 components[name] = true;
@@ -39,6 +41,28 @@ class FormioFacade {
             }
         }
         return {};
+    }
+
+    get customComponentsFronLibruaryOptions() {
+        if (customComponentsKeys.length) {
+            const components = customComponentsKeys.reduce((init, module) => {
+                return { ...init, [module]: true };
+            }, {});
+    
+            return {
+                builder: {
+                  basic: {
+                    components: {
+                      Well: true,
+                      ...components
+                    },
+                  },
+                  advanced: false,
+                },
+            };
+        } else {
+            return {};
+        }
     }
 
     _overrideMakeRequest(getForms, getFormById, getActiveFormPath) {
@@ -92,8 +116,18 @@ class FormioFacade {
         }
     }
 
+    registerCustomComponentsFromLibruary() {
+        if (customComponentsKeys.length) {
+            customComponentsKeys.forEach((module) => {
+                Formio.registerComponent(module, customComponents[module]);
+                Formio.use(customComponents[module]);
+            });
+        }
+    }
+
     attachBuilder(schema, options = {}) {
-        Formio.builder(this.builderContainer, schema, { ...this.builderOptions, ...options }).then(builderInstance => {
+        this.registerCustomComponentsFromLibruary();
+        Formio.builder(this.builderContainer, schema, {...this.builderOptions, ...options, ...this.customComponentsFronLibruaryOptions}).then(builderInstance => {
             this.builder = builderInstance;
             if (this.onSchemaChanged) {
                 this.builder.on('render', () => {
