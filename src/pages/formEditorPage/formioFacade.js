@@ -51,7 +51,8 @@ class FormioFacade {
     
             return {
                 builder: {
-                  basic: {
+                  customComponents: {
+                    title: "HES Components",
                     components: {
                       Well: true,
                       ...components
