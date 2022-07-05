@@ -58,7 +58,6 @@ class FormioFacade {
                       ...components
                     },
                   },
-                  advanced: false,
                 },
             };
         } else {
