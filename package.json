@@ -12,13 +12,13 @@
     "jsdom-global": "^3.0.2",
     "popper.js": "^1.16.0",
     "react-formio": "^4.3.0",
-    "hes-formio-components": "^1.1.4",
+    "hes-formio-components": "^1.1.5",
     "uuid": "^3.3.3"
   },
   "devDependencies": {
     "electron": "^7.1.9",
     "electron-builder": "^22.2.0",
-    "hes-formio-components": "^1.1.4",
+    "hes-formio-components": "^1.1.5",
     "jest": "^25.1.0"
   },
   "scripts": {
