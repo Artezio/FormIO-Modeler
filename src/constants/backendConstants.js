@@ -3,8 +3,6 @@ const path = require('path');
 
 const { NEW_FORM_NAME } = require('./mutual');
 
-const a = 0
-
 exports.BASE_TITLE = 'FormIO Modeler';
 exports.PATH_TO_WORKSPACES_INFO = path.resolve(app.getPath('userData'), './recentWorkspaces.txt');
 exports.PATH_TO_START_PAGE = path.resolve(app.getAppPath(), './src/pages/startPage/start.html');
