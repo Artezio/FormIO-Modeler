@@ -11,6 +11,7 @@
     "jsdom": "^16.2.0",
     "jsdom-global": "^3.0.2",
     "popper.js": "^1.16.0",
+    "hes-formio-components": "^1.2.9",
     "react-formio": "^4.3.0",
     "uuid": "^3.3.3"
   },
