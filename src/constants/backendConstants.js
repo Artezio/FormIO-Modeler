@@ -5,8 +5,8 @@ const { NEW_FORM_NAME } = require('./mutual');
 
 exports.BASE_TITLE = 'FormIO Modeler';
 exports.PATH_TO_WORKSPACES_INFO = path.resolve(app.getPath('userData'), './recentWorkspaces.txt');
-exports.PATH_TO_START_PAGE = path.resolve(app.getAppPath(), './pages/startPage/start.html');
-exports.PATH_TO_FORM_EDITOR_PAGE = path.resolve(app.getAppPath(), './pages/formEditorPage/formEditor.html');
+exports.PATH_TO_START_PAGE = path.resolve(app.getAppPath(), './src/pages/startPage/start.html');
+exports.PATH_TO_FORM_EDITOR_PAGE = path.resolve(app.getAppPath(), './src/pages/formEditorPage/formEditor.html');
 exports.SAVED = 'saved';
 exports.NOT_SAVED = 'NOT_SAVED';
 exports.MAX_RECENT_WORKSPACES = 5;
