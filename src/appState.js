@@ -10,7 +10,7 @@ class AppState {
         this.recentWorkspaces = [];
         this.tabs = [];
         this.storedFormPathsByWorkspaceMap = new Map();
-        // this._initRecentWorkspaces();
+        this._initRecentWorkspaces();
         this._init();
     }
 
@@ -149,7 +149,7 @@ class AppState {
         this.currentWorkspace = workspace;
         this._addRecentWorkspace(workspace);
         this.workspaceService.setCurrentWorkspace(workspace);
-        // this.saveRecentWorkspaces();
+        this.saveRecentWorkspaces();
         this._initTabs();
     }
 

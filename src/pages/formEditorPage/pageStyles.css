@@ -253,3 +253,7 @@ display: inline;
   border: 1px solid #dee2e6;
   border-top: none;
 }
+
+.component-edit-container {
+  overflow: auto !important;
+}
